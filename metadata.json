@@ -1,0 +1,7 @@
+{
+  "name": "Herb Haven: Cosmic Farm",
+  "description": "A vibrant, 2D casual farming game where you cultivate mystical, stylized herbs. Manage your plots, upgrade your tools, and trade with eccentric NPCs in a psychedelic, cartoon-style environment.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
