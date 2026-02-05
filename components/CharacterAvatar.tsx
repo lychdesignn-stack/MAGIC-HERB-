@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Player } from '../types';
-import { LUXURY_ITEMS } from '../constants';
+import { LUXURY_ITEMS, AVATAR_OPTIONS } from '../constants';
 
 interface CharacterAvatarProps {
   player: Player;
@@ -10,47 +10,53 @@ interface CharacterAvatarProps {
 
 const CharacterAvatar: React.FC<CharacterAvatarProps> = ({ player, size = 'md' }) => {
   const sizeClasses = {
-    sm: 'w-10 h-10 rounded-xl',
-    md: 'w-16 h-16 rounded-2xl',
-    lg: 'w-28 h-28 rounded-3xl',
-    xl: 'w-40 h-40 rounded-[3rem]'
+    sm: 'w-12 h-12 rounded-xl',
+    md: 'w-20 h-20 rounded-2xl',
+    lg: 'w-32 h-32 rounded-[2.5rem]',
+    xl: 'w-48 h-48 rounded-[3.5rem]'
   };
 
-  const seedSuffix = player.gender === 'male' ? 'Oliver' : 'Cali';
-  const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seedSuffix}&backgroundColor=b6e3f4`;
+  // Encontra a URL do avatar selecionado
+  const selectedAvatar = AVATAR_OPTIONS.find(opt => opt.id === player.avatarId) || AVATAR_OPTIONS[0];
+  const avatarUrl = selectedAvatar.url;
   
   const activeCape = LUXURY_ITEMS.find(i => i.id === player.activeCosmetics.cape);
   const activeJewelry = LUXURY_ITEMS.find(i => i.id === player.activeCosmetics.jewelry);
   const activeLuxury = LUXURY_ITEMS.find(i => i.id === player.activeCosmetics.luxury);
 
   return (
-    <div className={`relative flex items-center justify-center bg-zinc-900 border-2 border-white/10 overflow-hidden shadow-2xl ${sizeClasses[size]}`}>
-      {/* Cape Layer (Background of the character) */}
-      {activeCape && (
-        <div className="absolute inset-0 z-0 opacity-40 bg-gradient-to-t from-transparent to-white/20 animate-pulse pointer-events-none" />
+    <div className={`relative flex items-center justify-center bg-zinc-900 border-2 border-white/10 overflow-hidden shadow-2xl transition-all duration-500 ${sizeClasses[size]}`}>
+      {/* Brilho de fundo para títulos especiais */}
+      {player.activeTitle === 'deus_verde' && (
+        <div className="absolute inset-0 bg-gradient-to-t from-green-500/40 to-transparent animate-pulse z-0" />
+      )}
+      {player.activeTitle === 'imperador' && (
+        <div className="absolute inset-0 bg-gradient-to-t from-amber-500/40 to-transparent animate-pulse z-0" />
       )}
 
-      {/* Base Avatar */}
-      <img src={avatarUrl} alt="Player Avatar" className="w-full h-full object-cover relative z-10" />
+      {/* Personagem Principal */}
+      <img 
+        src={avatarUrl} 
+        alt="Avatar do Jogador" 
+        className="w-full h-full object-cover relative z-10 scale-100" 
+      />
 
-      {/* Cape Icon Overlay */}
+      {/* Sobreposições de Itens de Luxo */}
       {activeCape && (
-        <div className="absolute -left-1 bottom-1 z-30 pointer-events-none">
-          <span className="text-xl filter drop-shadow-md">{activeCape.icon}</span>
+        <div className="absolute -left-1 top-1 z-30 pointer-events-none animate-bounce" style={{ animationDuration: '3s' }}>
+          <span className="text-2xl filter drop-shadow-md">{activeCape.icon}</span>
         </div>
       )}
 
-      {/* Jewelry Layer */}
       {activeJewelry && (
-        <div className="absolute bottom-1 right-1 z-30 pointer-events-none">
-          <span className="text-xl filter drop-shadow-[0_0_10px_gold]">{activeJewelry.icon}</span>
+        <div className="absolute top-2 right-2 z-30 pointer-events-none">
+          <span className="text-2xl filter drop-shadow-[0_0_8px_rgba(255,215,0,0.8)]">{activeJewelry.icon}</span>
         </div>
       )}
 
-      {/* Luxury Item Overlay */}
       {activeLuxury && (
-        <div className="absolute top-1 right-1 z-30 pointer-events-none">
-          <span className="text-xl filter drop-shadow-lg">{activeLuxury.icon}</span>
+        <div className="absolute bottom-2 right-2 z-30 pointer-events-none">
+          <span className="text-2xl filter drop-shadow-[0_0_10px_white]">{activeLuxury.icon}</span>
         </div>
       )}
     </div>

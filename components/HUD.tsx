@@ -8,9 +8,10 @@ interface HUDProps {
   player: Player;
   currentEvent: string | null;
   onOpenProfile: () => void;
+  totalBonus?: number;
 }
 
-const HUD: React.FC<HUDProps> = ({ player, currentEvent, onOpenProfile }) => {
+const HUD: React.FC<HUDProps> = ({ player, currentEvent, onOpenProfile, totalBonus = 0 }) => {
   const activeThemeId = player.activeCosmetics.hud_theme;
   const activeTheme = LUXURY_ITEMS.find(i => i.id === activeThemeId);
   
@@ -33,14 +34,21 @@ const HUD: React.FC<HUDProps> = ({ player, currentEvent, onOpenProfile }) => {
             <span className="font-cartoon text-xs text-amber-500">{Math.floor(player.hashCoins)}</span>
           </div>
         </div>
-        <div className={`bg-white/5 px-3 py-0.5 rounded-full border border-white/10 flex items-center gap-1.5 self-start`}>
-          <span className={`text-[8px] font-bold ${themeStyles.text}`}>LV.{Math.floor(player.level)}</span>
-          <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden">
-            <div 
-              className={`h-full transition-all duration-1000 ${activeTheme ? themeStyles.text.replace('text', 'bg') : 'bg-blue-500'}`} 
-              style={{ width: `${(player.level % 1) * 100}%` }}
-            />
+        <div className="flex items-center gap-2">
+          <div className={`bg-white/5 px-2 py-0.5 rounded-full border border-white/10 flex items-center gap-1.5 self-start`}>
+            <span className={`text-[8px] font-bold ${themeStyles.text}`}>LV.{Math.floor(player.level)}</span>
+            <div className="w-16 h-1 bg-white/5 rounded-full overflow-hidden">
+              <div 
+                className={`h-full transition-all duration-1000 ${activeTheme ? themeStyles.text.replace('text', 'bg') : 'bg-blue-500'}`} 
+                style={{ width: `${(player.level % 1) * 100}%` }}
+              />
+            </div>
           </div>
+          {totalBonus > 0 && (
+            <div className="bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">
+              <span className="text-[8px] font-black text-green-500 uppercase">+{Math.round(totalBonus * 100)}% Prod.</span>
+            </div>
+          )}
         </div>
       </div>
 

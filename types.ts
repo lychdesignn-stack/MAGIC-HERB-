@@ -5,11 +5,19 @@ export enum Rarity {
   LEGENDARY = 'Legendary'
 }
 
+export interface Title {
+  id: string;
+  name: string;
+  requirement: string;
+  price?: number; // em HashCoins
+  type: 'reputation' | 'purchasable';
+}
+
 export interface Seed {
   id: string;
   name: string;
   rarity: Rarity;
-  growthTime: number; // in seconds
+  growthTime: number; 
   baseValue: number;
   color: string;
   secondaryColor?: string;
@@ -36,6 +44,7 @@ export interface LuxuryItem {
   currency: 'coins' | 'hashCoins';
   icon: string;
   description: string;
+  harvestBonus?: number; // Ex: 0.1 para 10%
   style?: {
     bg: string;
     border: string;
@@ -46,6 +55,7 @@ export interface LuxuryItem {
 
 export interface Player {
   gender: 'male' | 'female';
+  avatarId: string;
   coins: number;
   hashCoins: number;
   level: number;
@@ -53,6 +63,8 @@ export interface Player {
   reputation: Record<string, number>;
   unlockedRarities: Rarity[]; 
   ownedLuxuryItems: string[];
+  ownedTitles: string[];
+  activeTitle: string | null;
   activeCosmetics: Record<'cape' | 'jewelry' | 'luxury' | 'hud_theme', string | null>;
 }
 

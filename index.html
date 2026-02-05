@@ -14,10 +14,8 @@
             color: white;
             margin: 0;
             padding: 0;
-            overflow: hidden;
             width: 100%;
             height: 100%;
-            position: fixed;
         }
         .font-cartoon {
             font-family: 'Fredoka One', cursive;
@@ -71,8 +69,7 @@
 }
 </script>
 </head>
-<body>
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+<body class="overflow-hidden fixed inset-0">
+    <div id="root" class="h-full w-full"></div>
 </body>
 </html>

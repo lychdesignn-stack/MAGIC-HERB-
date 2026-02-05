@@ -29,7 +29,6 @@ const FarmGrid: React.FC<FarmGridProps> = ({ plots, onPlant, onWater, onPrune, o
   const handlePlotClick = (plot: Plot) => {
     if (!plot.seedId && plot.isUnlocked) {
       if (activeSeedId) {
-        // Verifica se a semente bate com o tipo do terreno
         const seed = SEEDS.find(s => s.id === activeSeedId);
         if (seed && seed.rarity === plot.type) {
           onPlant(plot.id, activeSeedId);
@@ -39,8 +38,8 @@ const FarmGrid: React.FC<FarmGridProps> = ({ plots, onPlant, onWater, onPrune, o
   };
 
   return (
-    <div className="flex flex-col items-center w-full max-w-md relative pb-4">
-      <div className="grid grid-cols-2 gap-4 w-full px-2 mb-20">
+    <div className="flex flex-col items-center w-full max-w-2xl mx-auto relative pb-20">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full px-2 mb-24">
         {plots.map(plot => (
           <PlotComponent 
             key={plot.id} 
@@ -56,11 +55,11 @@ const FarmGrid: React.FC<FarmGridProps> = ({ plots, onPlant, onWater, onPrune, o
         ))}
       </div>
 
-      {/* Semente Selecionada / HUD de Seleção */}
-      <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[150] w-auto">
-        <div className="bg-black/80 backdrop-blur-2xl border border-white/20 rounded-full p-2 shadow-[0_15px_40px_rgba(0,0,0,0.8)] flex items-center gap-1.5">
+      {/* Semente Selecionada / HUD de Seleção Otimizado */}
+      <div className="fixed bottom-24 inset-x-0 z-[150] px-4 flex justify-center pointer-events-none">
+        <div className="bg-black/80 backdrop-blur-3xl border border-white/20 rounded-3xl p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] flex items-center gap-2 pointer-events-auto max-w-full overflow-hidden">
           {availableSeeds.length > 0 ? (
-            <div className="flex gap-2 overflow-x-auto no-scrollbar px-1 py-0.5 max-w-[70vw]">
+            <div className="flex gap-2 overflow-x-auto no-scrollbar px-1 py-1 max-w-[80vw]">
               {availableSeeds.map(seed => {
                 const count = inventory[seed.id] || 0;
                 const isActive = activeSeedId === seed.id;
@@ -69,34 +68,36 @@ const FarmGrid: React.FC<FarmGridProps> = ({ plots, onPlant, onWater, onPrune, o
                     key={seed.id}
                     onClick={() => setActiveSeedId(isActive ? null : seed.id)}
                     className={`
-                      relative flex-shrink-0 w-12 h-12 rounded-full border transition-all duration-300 flex items-center justify-center
+                      relative flex-shrink-0 w-12 h-12 rounded-2xl border-2 transition-all duration-300 flex items-center justify-center
                       ${isActive 
-                        ? 'bg-purple-600 border-white/60 scale-110 shadow-lg' 
-                        : 'bg-black/40 border-white/10 active:scale-90'}
+                        ? 'bg-indigo-600 border-indigo-400 scale-110 shadow-[0_0_15px_rgba(99,102,241,0.5)]' 
+                        : 'bg-zinc-900 border-white/5 active:scale-90'}
                     `}
                   >
                     <div 
-                      className="w-8 h-8 rounded-full flex items-center justify-center shadow-inner"
-                      style={{ backgroundColor: seed.color }}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center shadow-inner"
+                      style={{ backgroundColor: seed.color + '44' }}
                     >
-                      <span className="text-xs filter drop-shadow-md">🌱</span>
+                      <span className="text-sm filter drop-shadow-md">🌱</span>
                     </div>
-                    <div className="absolute -bottom-1 -right-1 bg-zinc-900 border border-white/30 rounded-full px-1.5 min-w-[18px] h-[18px] flex items-center justify-center z-10">
-                      <span className="text-[9px] font-black text-white leading-none">{count}</span>
+                    <div className="absolute -top-2 -right-2 bg-indigo-500 border border-white/20 rounded-full px-1.5 h-5 min-w-[20px] flex items-center justify-center z-10 shadow-lg">
+                      <span className="text-[10px] font-black text-white leading-none">{count}</span>
                     </div>
                   </button>
                 );
               })}
             </div>
           ) : (
-            <div className="px-6 py-2.5 text-white/30 text-[9px] uppercase font-bold tracking-widest italic">Estoque Vazio</div>
+            <div className="px-6 py-2.5 text-white/40 text-[10px] uppercase font-black tracking-widest italic flex items-center gap-2">
+               <span className="text-lg">🛒</span> Sem Sementes
+            </div>
           )}
           {activeSeedId && (
             <button 
               onClick={() => setActiveSeedId(null)}
-              className="ml-1 w-8 h-8 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 active:scale-90 transition-transform"
+              className="w-10 h-10 rounded-2xl bg-rose-600/20 border border-rose-500/40 flex items-center justify-center text-rose-400 active:scale-90 transition-transform shrink-0"
             >
-              <span className="text-xs">✕</span>
+              <span className="text-sm font-bold">✕</span>
             </button>
           )}
         </div>
