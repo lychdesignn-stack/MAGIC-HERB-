@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
-import { Plot, Seed, Rarity } from '../types';
-import { SEEDS } from '../constants';
+import { Plot, Seed, Rarity, Player } from '../types';
+import { SEEDS, UPGRADE_COSTS, UPGRADE_LIMITS } from '../constants';
 
 interface PlotProps {
   plot: Plot;
@@ -10,75 +10,104 @@ interface PlotProps {
   onWater: () => void;
   onPrune: () => void;
   onHarvest: () => void;
+  onUpgrade: () => void;
+  player: Player;
 }
 
-// Organic Leaf with improved unfolding logic
-const OrganicLeaf = ({ progress, size, color, x, y, rotation, isPruned }: { progress: number, size: number, color: string, x: number, y: number, rotation: number, isPruned: boolean }) => {
+const OrganicLeaf = ({ progress, size, color, x, y, rotation, isPruned, gradientId }: { progress: number, size: number, color: string, x: number, y: number, rotation: number, isPruned: boolean, gradientId?: string }) => {
   if (isPruned) return null;
-
-  const leafProgress = Math.max(0, Math.min(1, (progress - 0.2) / 0.8));
+  const leafProgress = Math.max(0, Math.min(1, (progress - 0.1) / 0.9));
   const currentScale = size * leafProgress;
   
   const leaflets = [
-    { angle: -70, scale: 0.5 },
-    { angle: -45, scale: 0.8 },
-    { angle: -22, scale: 1 },
+    { angle: -65, scale: 0.5 }, { angle: -40, scale: 0.8 }, { angle: -20, scale: 1 }, 
     { angle: 0, scale: 1.2 }, 
-    { angle: 22, scale: 1 },
-    { angle: 45, scale: 0.8 },
-    { angle: 70, scale: 0.5 },
+    { angle: 20, scale: 1 }, { angle: 40, scale: 0.8 }, { angle: 65, scale: 0.5 },
   ];
 
   if (leafProgress <= 0) return null;
 
   return (
-    <g transform={`translate(${x}, ${y}) rotate(${rotation}) scale(${currentScale})`} className="transition-all duration-500">
+    <g transform={`translate(${x}, ${y}) rotate(${rotation}) scale(${currentScale})`} className="transition-all duration-700">
       {leaflets.map((leaf, i) => (
-        <path
-          key={i}
-          d="M0,0 C-1,-5 -2.5,-15 -2.5,-25 C-2.5,-35 0,-45 0,-45 C0,-45 2.5,-35 2.5,-25 C2.5,-15 1,-5 0,0"
-          fill={color}
-          stroke="#064e3b"
-          strokeWidth="1.5"
+        <path 
+          key={i} 
+          d="M0,0 C-1,-5 -2.5,-15 -2.5,-25 C-2.5,-35 0,-45 0,-45 C0,-45 2.5,-35 2.5,-25 C2.5,-15 1,-5 0,0" 
+          fill={gradientId ? `url(#${gradientId})` : color} 
+          stroke="rgba(0,0,0,0.2)" 
+          strokeWidth="0.5"
           style={{ 
-            transition: 'transform 0.5s ease-out',
+            transition: 'transform 0.8s ease-out', 
             transform: `rotate(${leaf.angle * leafProgress}deg) scale(${leaf.scale})` 
           }}
         />
       ))}
-      {/* Reflexo de luz na folha para destacar sob a iluminação forte */}
-      <ellipse cx="0" cy="-20" rx="3" ry="12" fill="white" fillOpacity="0.2" filter="blur(3px)" />
     </g>
   );
 };
 
-// Flower/Bud with growth and subtle pulsing
-const OrganicNugget = ({ progress, color, x, y, scale, isLegendary }: { progress: number, color: string, x: number, y: number, scale: number, isLegendary: boolean }) => {
-  const nuggetGrowth = Math.max(0, Math.min(1, (progress - 0.5) / 0.5));
+const OrganicNugget = ({ progress, color, x, y, scale, glowColor, gradientId, rarity }: { progress: number, color: string, x: number, y: number, scale: number, glowColor: string, gradientId?: string, rarity: Rarity }) => {
+  const nuggetGrowth = Math.max(0, Math.min(1, (progress - 0.4) / 0.6));
   if (nuggetGrowth <= 0) return null;
 
   return (
     <g transform={`translate(${x}, ${y}) scale(${scale * nuggetGrowth})`}>
+      {/* Glow / Aura */}
+      <circle r={rarity === Rarity.LEGENDARY ? "40" : "25"} fill={glowColor} fillOpacity={rarity === Rarity.LEGENDARY ? "0.4" : "0.2"} filter="blur(15px)" className={rarity === Rarity.LEGENDARY ? "animate-pulse" : ""} />
+      
+      {/* Legendary Rotating Ring */}
+      {rarity === Rarity.LEGENDARY && (
+        <circle r="35" fill="none" stroke={glowColor} strokeWidth="1" strokeDasharray="10 5" className="animate-[spin_10s_linear_infinite]" />
+      )}
+
       <path 
         d="M-12,12 Q-16,0 -8,-18 Q0,-30 8,-18 Q16,0 12,12 Q0,20 -12,12" 
-        fill={color} 
-        stroke="#1a2e05" 
-        strokeWidth="2" 
+        fill={gradientId ? `url(#${gradientId})` : color} 
+        stroke="rgba(0,0,0,0.3)" 
+        strokeWidth="1" 
       />
-      <g stroke="#f97316" strokeWidth="2" strokeLinecap="round" fill="none">
-        <path d="M-10,-5 Q-14,-8 -18,-3" className="animate-pulse" />
-        <path d="M10,-8 Q14,-10 16,-5" className="animate-pulse" />
-        <path d="M-3,-22 Q-5,-28 -1,-32" />
-        <path d="M3,-20 Q5,-26 8,-28" />
-      </g>
+      
+      {/* Resina / Brilho */}
       <g fill="white" fillOpacity="0.6">
-        <circle cx="-3" cy="-12" r="1.5" />
-        <circle cx="6" cy="-6" r="1.2" />
+        <circle cx="-4" cy="-8" r="1.5" />
+        <circle cx="5" cy="-3" r="1.2" />
+        {rarity === Rarity.LEGENDARY && <circle cx="0" cy="5" r="2" className="animate-pulse" />}
       </g>
-      {isLegendary && (
-        <circle r="38" fill="none" stroke="gold" strokeWidth="1" strokeDasharray="4 8" className="animate-[spin_5s_linear_infinite]" />
-      )}
+      
+      {/* Pelos alaranjados */}
+      <g stroke="#f97316" strokeWidth="1" strokeLinecap="round" fill="none" opacity="0.7">
+        <path d="M-8,-8 Q-12,-12 -14,-10" />
+        <path d="M8,-10 Q12,-15 14,-8" />
+      </g>
     </g>
+  );
+};
+
+const GrowLightEffect = ({ type, progress }: { type: Rarity, progress: number }) => {
+  const intensity = 0.1 + (progress / 100) * 0.7;
+  const colors = {
+    [Rarity.COMMON]: { light: '#ffffff', beam: 'rgba(255,255,255,0.2)' },
+    [Rarity.RARE]: { light: '#d8b4fe', beam: 'rgba(168,85,247,0.3)' },
+    [Rarity.LEGENDARY]: { light: '#fde047', beam: 'rgba(234,179,8,0.5)' },
+  };
+  const color = colors[type];
+
+  return (
+    <div className="absolute top-0 inset-x-0 h-full pointer-events-none z-10 overflow-hidden">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-2 bg-zinc-800 rounded-b-full border-x border-b border-white/10 shadow-lg" />
+      <div 
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-1 rounded-b-full blur-[2px]"
+        style={{ backgroundColor: color.light, opacity: intensity }}
+      />
+      <div 
+        className="absolute top-2 left-1/2 -translate-x-1/2 w-48 h-full transition-opacity duration-1000"
+        style={{ 
+          background: `linear-gradient(to bottom, ${color.beam}, transparent)`,
+          clipPath: 'polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)',
+          opacity: intensity
+        }}
+      />
+    </div>
   );
 };
 
@@ -91,179 +120,124 @@ const PlotComponent: React.FC<PlotProps> = ({ plot, selectedSeedId, onPlant, onW
       const interval = setInterval(() => {
         const seedData = SEEDS.find(s => s.id === plot.seedId);
         if (seedData) {
-          const elapsed = (Date.now() - (plot.plantedAt || 0)) / 1000;
+          const elapsed = (Date.now() - plot.plantedAt!) / 1000;
           const currentProgress = (elapsed / seedData.growthTime) * 100;
           setProgress(Math.min(currentProgress, 100));
         }
       }, 500);
       return () => clearInterval(interval);
-    } else if (!plot.seedId) {
-      setProgress(0);
-    }
+    } else if (!plot.seedId) setProgress(0);
   }, [plot.seedId, plot.plantedAt, plot.isWatered]);
 
   const isReadyForPruning = progress >= 100;
-  const isLegendary = seed?.rarity === Rarity.LEGENDARY;
 
-  const getLightStage = () => {
-    if (progress < 40) return 'white';
-    if (progress < 80) return 'purple';
-    return 'gold';
+  const getRarityStyle = () => {
+    switch(plot.type) {
+      case Rarity.COMMON: return 'border-white/10';
+      case Rarity.RARE: return 'border-purple-500/30 shadow-[inset_0_0_20px_rgba(168,85,247,0.15)]';
+      case Rarity.LEGENDARY: return 'border-yellow-500/40 shadow-[inset_0_0_40px_rgba(234,179,8,0.25)] ring-1 ring-yellow-500/20';
+    }
   };
 
-  const getLedColor = () => {
-    if (!seed) return 'bg-zinc-800';
-    const stage = getLightStage();
-    if (stage === 'white') return 'bg-white shadow-[0_0_25px_white]'; 
-    if (stage === 'purple') return 'bg-purple-500 shadow-[0_0_25px_#a855f7]'; 
-    return 'bg-amber-400 shadow-[0_0_30px_#fbbf24]'; 
-  };
-
-  const renderPlant = () => {
-    if (!seed) return null;
-    
-    const p = progress / 100;
-    const easeProgress = p * p * (3 - 2 * p); 
-    const stemHeight = easeProgress * 48;
-    const stemY = 100 - stemHeight;
-    const bend = Math.max(0, 15 * (1 - p * 3));
-
-    return (
-      <div 
-        className="absolute inset-x-0 bottom-[14%] flex justify-center pointer-events-none z-20"
-        style={{ clipPath: 'inset(-100px -100px 0px -100px)' }}
-      >
-        <svg 
-          width="130" 
-          height="140" 
-          viewBox="0 0 100 100" 
-          className="overflow-visible"
-        >
-          {/* Main Stem */}
-          <path 
-            d={`M50,100 Q${50 - bend},${100 - stemHeight/2} 50,${stemY}`}
-            fill="none"
-            stroke="#14532d"
-            strokeWidth={2.5 + p * 1.5}
-            strokeLinecap="round"
-            className="transition-all duration-300"
-          />
-
-          {p > 0.15 && (
-            <g>
-              <OrganicLeaf progress={p * 1.1} x={50} y={Math.max(stemY + 10, 88)} rotation={-50} size={0.5} color={seed.color} isPruned={plot.isPruned} />
-              <OrganicLeaf progress={p * 1.1} x={50} y={Math.max(stemY + 10, 88)} rotation={50} size={0.5} color={seed.color} isPruned={plot.isPruned} />
-              {p > 0.45 && (
-                <>
-                  <OrganicLeaf progress={p} x={50} y={Math.max(stemY + 5, 65)} rotation={-35} size={0.4} color={seed.color} isPruned={plot.isPruned} />
-                  <OrganicLeaf progress={p} x={50} y={Math.max(stemY + 5, 65)} rotation={35} size={0.4} color={seed.color} isPruned={plot.isPruned} />
-                </>
-              )}
-            </g>
-          )}
-
-          <OrganicNugget progress={p} x={50} y={stemY} scale={0.9} color={seed.color} isLegendary={isLegendary} />
-          
-          {p > 0 && p < 0.15 && (
-            <g className="animate-pulse">
-              <circle cx="48" cy="98" r="1" fill="#3f2305" />
-              <circle cx="52" cy="99" r="1.5" fill="#2a1803" />
-            </g>
-          )}
-        </svg>
-      </div>
-    );
-  };
-
-  const lightStage = getLightStage();
+  const gradientId = seed ? `grad-${seed.id}-${plot.id}` : '';
 
   return (
-    <div 
-      onClick={() => {
-        if (!plot.seedId) onPlant();
-        else if (!plot.isWatered) onWater();
-        else if (isReadyForPruning && !plot.isPruned) onPrune();
-        else if (plot.isPruned) onHarvest();
-      }}
-      className={`
-        relative w-full aspect-square rounded-[3.5rem] cursor-pointer transition-all duration-500 active:scale-95 overflow-hidden
-        ${plot.seedId ? 'bg-zinc-900 shadow-inner' : 'bg-zinc-950'}
-        ${!plot.seedId && selectedSeedId ? 'ring-4 ring-green-500 shadow-[0_0_20px_rgba(34,197,94,0.3)]' : ''}
-        ${plot.isFertilized ? 'legendary-glow border-2' : 'border-b-[10px] border-black'}
-        shadow-2xl
-      `}
-    >
-      {/* Background Lighting System */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        {/* Camada 1: Gradiente Base */}
-        <div className="absolute inset-0 bg-gradient-to-b from-zinc-800/20 to-black" />
-        
-        {/* Camada 2: Brilho Ambiente (Bloom) - Intensificado */}
-        <div 
-          className={`absolute top-0 left-1/2 -translate-x-1/2 w-[160%] h-[140%] transition-all duration-1000 blur-[100px]
-            ${lightStage === 'white' ? 'bg-white/50' : lightStage === 'purple' ? 'bg-purple-600/60' : 'bg-amber-500/70'}
-          `}
-          style={{ opacity: seed ? 0.6 + (progress/100) * 0.4 : 0 }}
-        />
-
-        {/* Camada 3: Holofote (Spotlight) Focalizado encima da planta */}
-        <div 
-          className={`absolute top-0 left-1/2 -translate-x-1/2 w-[100%] h-[150%] transition-all duration-700
-            ${lightStage === 'white' ? 'from-white/40' : lightStage === 'purple' ? 'from-purple-500/40' : 'from-amber-400/40'}
-            bg-gradient-to-b via-transparent to-transparent
-          `}
-          style={{ 
-            opacity: seed ? 1 : 0,
-            clipPath: 'polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)'
-          }}
-        />
-
-        {/* Camada 4: Glow Pulsante para vida extra */}
-        {seed && (
-          <div 
-            className={`absolute top-[-10%] left-1/2 -translate-x-1/2 w-40 h-40 blur-[40px] rounded-full animate-pulse
-              ${lightStage === 'white' ? 'bg-white/30' : lightStage === 'purple' ? 'bg-purple-400/30' : 'bg-amber-300/40'}
-            `}
-          />
-        )}
+    <div className={`relative w-full aspect-square rounded-[2rem] overflow-hidden bg-zinc-950 border-2 ${getRarityStyle()} transition-all duration-500 active:scale-95 group`}>
+      {/* Minimalist Capacity Badge */}
+      <div className="absolute top-3 right-4 z-50">
+        <div className="bg-black/60 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/10 flex items-center gap-1">
+          <span className="text-[10px] font-black text-white/40 tracking-tighter">×</span>
+          <span className="text-[11px] font-cartoon text-white/80">{plot.capacity}</span>
+        </div>
       </div>
 
-      {/* Compact LED Panel - Destaque visual do emissor de luz */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[60%] h-4 bg-zinc-800 rounded-b-2xl z-30 flex justify-center items-center gap-2 px-3 border-x border-b border-white/10 shadow-lg">
-        {[1,2,3,4].map(i => (
-          <div key={i} className={`w-2 h-1.5 rounded-full transition-all duration-700 ${getLedColor()}`} />
-        ))}
+      <div className="absolute top-3 left-4 z-50">
+         <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/30 group-hover:text-white/60 transition-colors">{plot.type}</span>
       </div>
 
-      {renderPlant()}
+      {plot.seedId && <GrowLightEffect type={plot.type} progress={progress} />}
 
-      {/* Soil Tile */}
-      <div className={`
-        absolute bottom-[10%] left-1/2 -translate-x-1/2 w-32 h-10 rounded-[50%] bg-[#0d0704] border-t-2 border-white/5 z-10 shadow-2xl overflow-hidden
-      `}>
-         <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:4px_4px]" />
-         {progress > 0 && progress < 12 && (
-           <g stroke="black" strokeWidth="1.5" fill="none" opacity="0.6">
-             <path d="M55,5 L65,15 M45,8 L35,18" />
-           </g>
-         )}
-      </div>
+      {seed && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+          <svg width="100%" height="100%" viewBox="0 0 100 100" className="overflow-visible">
+            <defs>
+              {/* Gradiente para Raras e Lendárias */}
+              {(seed.rarity === Rarity.RARE || seed.rarity === Rarity.LEGENDARY) && (
+                <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
+                  {seed.gradientColors ? (
+                    seed.gradientColors.map((c, i) => (
+                      <stop key={i} offset={`${(i / (seed.gradientColors!.length - 1)) * 100}%`} stopColor={c} />
+                    ))
+                  ) : (
+                    <>
+                      <stop offset="0%" stopColor={seed.color} />
+                      <stop offset="100%" stopColor={seed.secondaryColor || seed.color} />
+                    </>
+                  )}
+                </linearGradient>
+              )}
+            </defs>
 
-      {/* Action Overlays */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-50">
-        {!plot.seedId && selectedSeedId && (
-          <div className="bg-green-600 text-white px-4 py-1.5 rounded-full font-cartoon text-[8px] animate-bounce shadow-xl border border-white/20 uppercase tracking-tighter">Plantar</div>
+            <g transform={`scale(${0.85 + (plot.capacity * 0.05)}) translate(${(100 - 100*(0.85 + plot.capacity*0.05))/2}, 0)`}>
+              {/* Caule */}
+              <path 
+                d={`M50,95 Q${50 + Math.sin(progress/10)*2},${95 - (progress/100)*25} 50,${95 - (progress/100)*50}`} 
+                fill="none" 
+                stroke="#166534" 
+                strokeWidth={1.5 + (progress/100) * 2} 
+                strokeLinecap="round" 
+              />
+              
+              <OrganicLeaf progress={progress/100} size={0.5} color={seed.color} x={50} y={95 - (progress/100)*15} rotation={-45} isPruned={plot.isPruned} gradientId={gradientId} />
+              <OrganicLeaf progress={progress/100} size={0.6} color={seed.color} x={50} y={95 - (progress/100)*30} rotation={45} isPruned={plot.isPruned} gradientId={gradientId} />
+              <OrganicLeaf progress={progress/100} size={0.7} color={seed.color} x={50} y={95 - (progress/100)*45} rotation={-30} isPruned={plot.isPruned} gradientId={gradientId} />
+              
+              <OrganicNugget 
+                progress={progress/100} 
+                color={seed.color} 
+                x={50} 
+                y={95 - (progress/100)*50} 
+                scale={0.7 + (progress/100)*0.5} 
+                glowColor={seed.glowColor} 
+                gradientId={gradientId}
+                rarity={seed.rarity}
+              />
+            </g>
+          </svg>
+        </div>
+      )}
+
+      <div className="absolute bottom-[8%] left-1/2 -translate-x-1/2 w-24 h-4 bg-black/40 rounded-[100%] blur-sm pointer-events-none" />
+
+      <button 
+        onClick={() => {
+          if (!plot.seedId) onPlant();
+          else if (!plot.isWatered) onWater();
+          else if (isReadyForPruning && !plot.isPruned) onPrune();
+          else if (plot.isPruned) onHarvest();
+        }}
+        className="absolute inset-0 z-40 flex items-center justify-center"
+      >
+        {!plot.seedId && selectedSeedId && SEEDS.find(s => s.id === selectedSeedId)?.rarity === plot.type && (
+          <div className="bg-white/10 px-4 py-1.5 rounded-full text-[10px] font-black uppercase animate-bounce border border-white/20 backdrop-blur-sm">Cultivar</div>
         )}
-        {plot.seedId && !plot.isWatered && (
-          <div className="text-4xl animate-bounce drop-shadow-2xl">💧</div>
-        )}
+        {plot.seedId && !plot.isWatered && <div className="text-5xl animate-bounce drop-shadow-[0_0_15px_rgba(59,130,246,0.6)]">💧</div>}
         {isReadyForPruning && !plot.isPruned && (
-           <div className="w-14 h-14 bg-pink-500 rounded-[2rem] flex items-center justify-center text-2xl shadow-2xl animate-pulse border-4 border-white">✂️</div>
+          <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-3xl animate-pulse shadow-[0_0_30px_white] border-2 border-pink-500 transform rotate-12">✂️</div>
         )}
         {plot.isPruned && (
-          <div className="bg-purple-600 text-white px-6 py-2.5 rounded-full font-cartoon text-[10px] animate-pulse border-2 border-white/20 shadow-2xl uppercase tracking-[0.1em]">Colher</div>
+          <div className="bg-white text-black px-8 py-3 rounded-full font-cartoon text-[12px] animate-pulse border-2 border-white/40 shadow-[0_10px_30px_rgba(255,255,255,0.3)]">COLHER {plot.capacity}×</div>
         )}
-      </div>
+      </button>
+
+      {/* Partículas para Lendários e Raros */}
+      {(plot.type === Rarity.LEGENDARY || plot.type === Rarity.RARE) && plot.seedId && (
+        <div className="absolute inset-0 pointer-events-none opacity-50 overflow-hidden">
+          <div className={`absolute top-1/2 left-1/3 w-1 h-1 bg-white rounded-full ${plot.type === Rarity.LEGENDARY ? 'animate-ping' : 'animate-pulse'}`} />
+          <div className={`absolute top-1/4 right-1/3 w-1 h-1 bg-white rounded-full ${plot.type === Rarity.LEGENDARY ? 'animate-ping' : 'animate-pulse'} delay-500`} />
+          {plot.type === Rarity.LEGENDARY && <div className="absolute bottom-1/4 left-1/2 w-1.5 h-1.5 bg-yellow-200 rounded-full animate-bounce delay-200" />}
+        </div>
+      )}
     </div>
   );
 };

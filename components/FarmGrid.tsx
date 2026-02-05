@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plot, Seed } from '../types';
+import { Plot, Player } from '../types';
 import { SEEDS } from '../constants';
 import PlotComponent from './Plot';
 
@@ -10,10 +10,12 @@ interface FarmGridProps {
   onWater: (id: number) => void;
   onPrune: (id: number) => void;
   onHarvest: (id: number) => void;
+  onUpgrade: (id: number) => void;
   inventory: Record<string, number>;
+  player: Player;
 }
 
-const FarmGrid: React.FC<FarmGridProps> = ({ plots, onPlant, onWater, onPrune, onHarvest, inventory }) => {
+const FarmGrid: React.FC<FarmGridProps> = ({ plots, onPlant, onWater, onPrune, onHarvest, onUpgrade, inventory, player }) => {
   const [activeSeedId, setActiveSeedId] = useState<string | null>(null);
 
   const availableSeeds = SEEDS.filter(s => (inventory[s.id] || 0) > 0);
@@ -27,14 +29,17 @@ const FarmGrid: React.FC<FarmGridProps> = ({ plots, onPlant, onWater, onPrune, o
   const handlePlotClick = (plot: Plot) => {
     if (!plot.seedId && plot.isUnlocked) {
       if (activeSeedId) {
-        onPlant(plot.id, activeSeedId);
+        // Verifica se a semente bate com o tipo do terreno
+        const seed = SEEDS.find(s => s.id === activeSeedId);
+        if (seed && seed.rarity === plot.type) {
+          onPlant(plot.id, activeSeedId);
+        }
       }
     }
   };
 
   return (
     <div className="flex flex-col items-center w-full max-w-md relative pb-4">
-      {/* Grid de Terrenos - Ajustado para remover espaço excessivo */}
       <div className="grid grid-cols-2 gap-4 w-full px-2 mb-20">
         {plots.map(plot => (
           <PlotComponent 
@@ -45,11 +50,13 @@ const FarmGrid: React.FC<FarmGridProps> = ({ plots, onPlant, onWater, onPrune, o
             onWater={() => onWater(plot.id)}
             onPrune={() => onPrune(plot.id)}
             onHarvest={() => onHarvest(plot.id)}
+            onUpgrade={() => onUpgrade(plot.id)}
+            player={player}
           />
         ))}
       </div>
 
-      {/* Bandeja de Sementes Flutuante */}
+      {/* Semente Selecionada / HUD de Seleção */}
       <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[150] w-auto">
         <div className="bg-black/80 backdrop-blur-2xl border border-white/20 rounded-full p-2 shadow-[0_15px_40px_rgba(0,0,0,0.8)] flex items-center gap-1.5">
           {availableSeeds.length > 0 ? (
@@ -57,7 +64,6 @@ const FarmGrid: React.FC<FarmGridProps> = ({ plots, onPlant, onWater, onPrune, o
               {availableSeeds.map(seed => {
                 const count = inventory[seed.id] || 0;
                 const isActive = activeSeedId === seed.id;
-                
                 return (
                   <button
                     key={seed.id}
@@ -75,7 +81,6 @@ const FarmGrid: React.FC<FarmGridProps> = ({ plots, onPlant, onWater, onPrune, o
                     >
                       <span className="text-xs filter drop-shadow-md">🌱</span>
                     </div>
-                    
                     <div className="absolute -bottom-1 -right-1 bg-zinc-900 border border-white/30 rounded-full px-1.5 min-w-[18px] h-[18px] flex items-center justify-center z-10">
                       <span className="text-[9px] font-black text-white leading-none">{count}</span>
                     </div>
@@ -84,11 +89,8 @@ const FarmGrid: React.FC<FarmGridProps> = ({ plots, onPlant, onWater, onPrune, o
               })}
             </div>
           ) : (
-            <div className="px-6 py-2.5 text-white/30 text-[9px] uppercase font-bold tracking-widest italic">
-              Visite a Loja
-            </div>
+            <div className="px-6 py-2.5 text-white/30 text-[9px] uppercase font-bold tracking-widest italic">Estoque Vazio</div>
           )}
-
           {activeSeedId && (
             <button 
               onClick={() => setActiveSeedId(null)}

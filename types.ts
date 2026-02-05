@@ -12,10 +12,10 @@ export interface Seed {
   growthTime: number; // in seconds
   baseValue: number;
   color: string;
-  secondaryColor?: string; // Para Raras
-  gradientColors?: string[]; // Para Lendárias
+  secondaryColor?: string;
+  gradientColors?: string[];
   glowColor: string;
-  hashCoinPrice?: number; // Preço opcional em Hash Coins
+  hashCoinPrice?: number;
 }
 
 export interface Offer {
@@ -28,24 +28,44 @@ export interface Offer {
   reputationAward: number;
 }
 
+export interface LuxuryItem {
+  id: string;
+  name: string;
+  category: 'cape' | 'jewelry' | 'luxury' | 'hud_theme';
+  price: number;
+  currency: 'coins' | 'hashCoins';
+  icon: string;
+  description: string;
+  style?: {
+    bg: string;
+    border: string;
+    text: string;
+    accent: string;
+  };
+}
+
 export interface Player {
+  gender: 'male' | 'female';
   coins: number;
   hashCoins: number;
   level: number;
-  inventory: Record<string, number>; // seedId -> quantity
-  unlockedPlots: number;
-  reputation: Record<string, number>; // npcId -> reputation value
-  unlockedRarities: Rarity[]; // Lista de raridades já compradas para desbloquear NPCs
+  inventory: Record<string, number>;
+  reputation: Record<string, number>;
+  unlockedRarities: Rarity[]; 
+  ownedLuxuryItems: string[];
+  activeCosmetics: Record<'cape' | 'jewelry' | 'luxury' | 'hud_theme', string | null>;
 }
 
 export interface Plot {
   id: number;
+  type: Rarity;
   seedId: string | null;
   plantedAt: number | null;
   isWatered: boolean;
   isPruned: boolean;
   isUnlocked: boolean;
-  isFertilized: boolean; // Se verdadeiro, dá bônus x2
+  isFertilized: boolean;
+  capacity: number; 
 }
 
 export interface NPC {
@@ -53,7 +73,7 @@ export interface NPC {
   name: string;
   avatar: string;
   dialogue: string;
-  demand: string[]; // List of seed IDs they want
+  demand: string[];
   multiplier: number;
-  rarityRequired: Rarity | null; // Nulo significa que já começa desbloqueado
+  rarityRequired: Rarity | null;
 }
