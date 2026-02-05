@@ -294,6 +294,35 @@ const App: React.FC = () => {
     }
   };
 
+  const handleMapSale = (itemId: string, quantity: number, price: number, wasBusted: boolean) => {
+    setPlayer(prev => {
+      const newInventory = { ...prev.inventory };
+      newInventory[itemId] = Math.max(0, (newInventory[itemId] || 0) - quantity);
+
+      if (wasBusted) {
+        // Nova multa: Perde 15% do saldo atual ao ser pego
+        const fine = Math.floor(prev.coins * 0.15);
+        return {
+          ...prev,
+          coins: Math.max(0, prev.coins - fine),
+          inventory: newInventory
+        };
+      }
+
+      // Venda bem-sucedida: Ganha o lucro do território
+      return {
+        ...prev,
+        coins: prev.coins + price,
+        inventory: newInventory,
+        stats: {
+          ...prev.stats,
+          totalSold: (prev.stats.totalSold || 0) + quantity,
+          totalEarned: (prev.stats.totalEarned || 0) + price
+        }
+      };
+    });
+  };
+
   const handleUpgradePlot = (id: number) => {
     const plot = plots.find(p => p.id === id);
     if(!plot) return;
@@ -388,7 +417,7 @@ const App: React.FC = () => {
           }
         }} onBack={() => setActiveScreen('farm')} />}
         {activeScreen === 'profile' && <ProfileView player={player} onBuyLuxury={handleBuyLuxury} onToggleCosmetic={handleToggleCosmetic} onSetAvatar={handleSetAvatar} onBuyTitle={handleBuyTitle} onSetTitle={handleSetTitle} onUpdateName={(n) => setPlayer(p => ({...p, name: n}))} onBack={() => setActiveScreen('farm')} />}
-        {activeScreen === 'map' && <CityMap player={player} onSale={() => {}} onBack={() => setActiveScreen('farm')} offers={offers} />}
+        {activeScreen === 'map' && <CityMap player={player} onSale={handleMapSale} onBack={() => setActiveScreen('farm')} offers={offers} />}
       </main>
       <BottomNav activeScreen={activeScreen === 'map' ? 'farm' : activeScreen} onNavigate={setActiveScreen} />
       <EventOverlay currentEvent={currentEvent} />

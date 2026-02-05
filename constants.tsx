@@ -70,10 +70,11 @@ export const SEEDS: Seed[] = [
 
 export const NPCS: NPC[] = [
   { id: 'n1', name: '@Cellin', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=cellin', dialogue: "Qualidade é a única moeda que importa.", demand: ['godfather_og', 'sun_walker'], multiplier: 2.8, rarityRequired: null, rarity: Rarity.LEGENDARY },
-  { id: 'n2', name: 'ICKY767', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=icky', dialogue: "Icky in the house!", demand: ['sticky_icky', 'kush_comum'], multiplier: 1.5, rarityRequired: null, rarity: Rarity.COMMON },
-  { id: 'n3', name: 'CPXINSANE', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=insane', dialogue: "Bora dominar o mapa.", demand: ['lemon_skunk', 'ak47'], multiplier: 1.8, rarityRequired: null, rarity: Rarity.RARE },
+  { id: 'n2', name: 'ICKY767', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix', dialogue: "Icky in the house!", demand: ['sticky_icky', 'kush_comum'], multiplier: 1.5, rarityRequired: null, rarity: Rarity.COMMON },
+  { id: 'n3', name: 'CPXINSANE', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kaden&skinColor=45201e', dialogue: "Bora dominar o mapa.", demand: ['lemon_skunk', 'ak47'], multiplier: 1.8, rarityRequired: null, rarity: Rarity.RARE },
   { id: 'n4', name: 'IGOWEED', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=igo', dialogue: "Só o puro aroma.", demand: ['purple_haze', 'amnesia_haze'], multiplier: 1.6, rarityRequired: null, rarity: Rarity.RARE },
   { id: 'n5', name: 'Vovó Maria', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=grandma', dialogue: "Para o meu chá...", demand: ['lemon_skunk', 'acapulco_gold'], multiplier: 1.2, rarityRequired: null, rarity: Rarity.COMMON },
+  { id: 'n6', name: 'Dancrema', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Dancrema&top=shortHair&accessories=round&clothes=suitAndTie&backgroundColor=facc15&clothingColor=3c3c3c', dialogue: "Negócios de alto nível exigem produtos de alto nível. Cadê o meu creme?", demand: ['white_widow', 'moon_rock'], multiplier: 3.5, rarityRequired: Rarity.LEGENDARY, rarity: Rarity.MYTHIC },
 ];
 
 export const UPGRADE_LIMITS = { [Rarity.COMMON]: 3, [Rarity.RARE]: 5, [Rarity.LEGENDARY]: 8, [Rarity.MYTHIC]: 12 };

@@ -16,19 +16,24 @@ const CityMap: React.FC<CityMapProps> = ({ player, onSale, onBack, offers }) => 
   const [amount, setAmount] = useState(1);
   const [isNegotiating, setIsNegotiating] = useState(false);
   const [busted, setBusted] = useState(false);
+  const [fineAmount, setFineAmount] = useState(0);
 
-  // NPCs CRÍTICOS: @Cellin, ICKY767, CPXINSANE, IGOWEED
-  const ELITE_NPC_IDS = ['n1', 'n2', 'n3', 'n4'];
+  // NPCs CRÍTICOS: @Cellin, ICKY767, CPXINSANE, IGOWEED, Dancrema
+  const ELITE_NPC_IDS = ['n1', 'n2', 'n3', 'n4', 'n6'];
   const ELITE_REQ_VAL = 100;
 
   const checkEliteAccess = () => {
     const missing = ELITE_NPC_IDS.map(id => {
-      const npc = player.reputation[id] || 0;
+      const npcRep = player.reputation[id] || 0;
+      const npcName = id === 'n1' ? '@Cellin' : 
+                     id === 'n2' ? 'ICKY767' : 
+                     id === 'n3' ? 'CPXINSANE' : 
+                     id === 'n4' ? 'IGOWEED' : 'Dancrema';
       return { 
         id, 
-        current: npc, 
+        current: npcRep, 
         target: ELITE_REQ_VAL, 
-        name: ['@Cellin', 'ICKY767', 'CPXINSANE', 'IGOWEED'][ELITE_NPC_IDS.indexOf(id)]
+        name: npcName
       };
     }).filter(m => m.current < m.target);
     
@@ -59,18 +64,20 @@ const CityMap: React.FC<CityMapProps> = ({ player, onSale, onBack, offers }) => 
       const seedId = sellingItem.replace('_bud', '').replace('_hash', '');
       const seed = SEEDS.find(s => s.id === seedId)!;
       
-      // Cálculo balanceado: base * quantidade * (1 + bônus de até 50%)
       const baseValue = sellingItem.endsWith('_hash') ? seed.baseValue * 5.5 : seed.baseValue * 1.5;
       const finalPrice = Math.floor(baseValue * amount * selectedTerritory.priceBonus);
 
       if (wasBusted) {
+          // Multa visual de 15%
+          const fine = Math.floor(player.coins * 0.15);
+          setFineAmount(fine);
           setBusted(true);
           onSale(sellingItem, amount, finalPrice, true);
           setTimeout(() => {
               setBusted(false);
               setIsNegotiating(false);
               setSelectedTerritory(null);
-          }, 3000);
+          }, 3500);
       } else {
           onSale(sellingItem, amount, finalPrice, false);
           setIsNegotiating(false);
@@ -149,8 +156,12 @@ const CityMap: React.FC<CityMapProps> = ({ player, onSale, onBack, offers }) => 
             <div className="absolute inset-0 bg-red-950/95 backdrop-blur-xl z-[150] flex flex-col items-center justify-center text-center p-10 border-4 border-red-600 animate-in zoom-in duration-300">
                 <div className="text-8xl mb-6">👮‍♂️🚨</div>
                 <h3 className="font-cartoon text-4xl text-white mb-4">ENQUADRADO!</h3>
+                <div className="bg-black/40 px-6 py-3 rounded-2xl border border-white/10 mb-4">
+                  <p className="text-red-400 font-cartoon text-xl">- 🪙 {fineAmount}</p>
+                  <p className="text-[10px] text-white/40 uppercase font-black">Multa de 15% aplicada</p>
+                </div>
                 <p className="text-sm text-red-200 font-black uppercase tracking-widest leading-relaxed">
-                    A patrulha confiscou toda a carga. <br/>Tente subornar ou corra na próxima!
+                    A patrulha confiscou toda a carga <br/>e levou uma fatia do seu lucro!
                 </p>
             </div>
         )}

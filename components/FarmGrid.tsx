@@ -40,8 +40,9 @@ const FarmGrid: React.FC<FarmGridProps> = ({ plots, onPlant, onWater, onToggleLi
   };
 
   return (
-    <div className="flex flex-col items-center w-full max-w-4xl mx-auto relative pb-20">
-      <div className="grid grid-cols-3 gap-3 w-full px-1 mb-32">
+    <div className="flex flex-col items-center w-full max-w-4xl mx-auto relative pb-48">
+      {/* Grade alterada para 2 colunas para melhor distribuição lateral */}
+      <div className="grid grid-cols-2 gap-5 w-full px-2">
         {plots.map(plot => (
           <PlotComponent 
             key={plot.id} 
