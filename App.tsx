@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Player, Plot, Rarity, Offer } from './types';
 import { SEEDS, NPCS, LUXURY_ITEMS, UPGRADE_COSTS, UPGRADE_LIMITS, CONSUMABLES, TITLES } from './constants';
 import FarmGrid from './components/FarmGrid';
@@ -15,7 +15,7 @@ import EventOverlay from './components/EventOverlay';
 import { GoogleGenAI } from "@google/genai";
 
 const OFFER_RESET_INTERVAL = 2 * 60 * 1000; 
-const SAVE_KEY = 'HERB_HAVEN_SAVE_V14'; 
+const SAVE_KEY = 'HERB_HAVEN_SAVE_V15'; 
 
 const createInitialInventory = () => {
   const inv: Record<string, number> = {};
@@ -53,6 +53,18 @@ const App: React.FC = () => {
   const [currentEvent, setCurrentEvent] = useState<string | null>(null);
   const [aiDialogue, setAiDialogue] = useState<string>("");
   const [lastOfferReset, setLastOfferReset] = useState<number>(Date.now());
+
+  // BÔNUS PASSIVOS DOS UTILITÁRIOS
+  const passiveBonuses = useMemo(() => {
+    const fertCount = player.inventory['fertilizante_bio'] || 0;
+    const hidroCount = player.inventory['hidro_boost'] || 0;
+    const chronoCount = player.inventory['chrono_trigger'] || 0;
+
+    return {
+      extraBuds: fertCount * 0.5,
+      growthSpeedMultiplier: 1 + (hidroCount * 0.10) + (chronoCount * 0.25)
+    };
+  }, [player.inventory]);
 
   const calculateTotalBonus = useCallback(() => {
     let bonus = 0;
@@ -219,7 +231,7 @@ const App: React.FC = () => {
         if (plot.seedId && plot.isWatered && plot.isLightOn && !plot.isPruned && plot.accumulatedGrowth < 1) {
           const seed = SEEDS.find(s => s.id === plot.seedId);
           if (seed) {
-            const increment = 1 / seed.growthTime;
+            const increment = (1 / seed.growthTime) * passiveBonuses.growthSpeedMultiplier;
             return { ...plot, accumulatedGrowth: Math.min(1, plot.accumulatedGrowth + increment) };
           }
         }
@@ -231,7 +243,7 @@ const App: React.FC = () => {
       }
     }, 1000);
     return () => clearInterval(tick);
-  }, [lastOfferReset, refreshOffers]);
+  }, [lastOfferReset, refreshOffers, passiveBonuses.growthSpeedMultiplier]);
 
   const handlePlant = (plotId: number, seedId: string) => {
     if (player.inventory[seedId] > 0) {
@@ -251,7 +263,7 @@ const App: React.FC = () => {
     if (!plot || !plot.seedId || !plot.isPruned) return;
     const budId = `${plot.seedId}_bud`;
     const bonus = calculateTotalBonus();
-    const amount = Math.ceil((plot.capacity + (plot.isFertilized ? 1 : 0)) * (1 + bonus)); 
+    const amount = Math.ceil((plot.capacity + (plot.isFertilized ? 1 : 0) + passiveBonuses.extraBuds) * (1 + bonus)); 
     
     setPlayer(prev => ({ 
       ...prev, 
@@ -347,15 +359,23 @@ const App: React.FC = () => {
     }
   };
 
+  // CÁLCULO DE PREÇO ESCALÁVEL
+  const getConsumablePrice = useCallback((itemId: string, basePrice: number) => {
+    const count = player.inventory[itemId] || 0;
+    return Math.floor(basePrice * Math.pow(1.5, count));
+  }, [player.inventory]);
+
   const handleBuyConsumable = (itemId: string) => {
     const item = CONSUMABLES.find(i => i.id === itemId);
     if (!item) return;
-    const canAfford = item.currency === 'coins' ? player.coins >= item.price : player.hashCoins >= item.price;
+    const currentPrice = getConsumablePrice(item.id, item.price);
+    const canAfford = item.currency === 'coins' ? player.coins >= currentPrice : player.hashCoins >= currentPrice;
+    
     if (canAfford) {
       setPlayer(prev => ({
         ...prev,
-        coins: item.currency === 'coins' ? prev.coins - item.price : prev.coins,
-        hashCoins: item.currency === 'hashCoins' ? prev.hashCoins - item.price : prev.hashCoins,
+        coins: item.currency === 'coins' ? prev.coins - currentPrice : prev.coins,
+        hashCoins: item.currency === 'hashCoins' ? prev.hashCoins - currentPrice : prev.hashCoins,
         inventory: { ...prev.inventory, [item.id]: (prev.inventory[item.id] || 0) + 1 }
       }));
     }
@@ -403,11 +423,18 @@ const App: React.FC = () => {
 
   return (
     <div className="h-screen w-full psychedelic-bg text-white flex flex-col overflow-hidden select-none">
-      <HUD player={player} currentEvent={currentEvent} onOpenProfile={() => setActiveScreen('profile')} onOpenMap={() => setActiveScreen('map')} totalBonus={calculateTotalBonus()} />
+      <HUD 
+        player={player} 
+        currentEvent={currentEvent} 
+        onOpenProfile={() => setActiveScreen('profile')} 
+        onOpenMap={() => setActiveScreen('map')} 
+        totalBonus={calculateTotalBonus()} 
+        passiveBonuses={passiveBonuses}
+      />
       <main className="flex-1 overflow-y-auto pt-4 px-4 custom-scrollbar pb-10">
         {activeScreen === 'farm' && <FarmGrid plots={plots} onPlant={handlePlant} onWater={(id) => setPlots(p => p.map(x => x.id === id ? {...x, isWatered: true} : x))} onToggleLight={(id) => setPlots(p => p.map(x => x.id === id ? {...x, isLightOn: !x.isLightOn} : x))} onPrune={(id) => setPlots(p => p.map(x => x.id === id ? {...x, isPruned: true} : x))} onHarvest={handleHarvest} onUpgrade={handleUpgradePlot} inventory={player.inventory} player={player} />}
         {activeScreen === 'warehouse' && <Warehouse player={player} onBack={() => setActiveScreen('farm')} />}
-        {activeScreen === 'shop' && <Shop player={player} plots={plots} onBuy={handleBuy} onUpgradePlot={handleUpgradePlot} onBuyLuxury={handleBuyLuxury} onBuyConsumable={handleBuyConsumable} onBack={() => setActiveScreen('farm')} />}
+        {activeScreen === 'shop' && <Shop player={player} plots={plots} onBuy={handleBuy} onUpgradePlot={handleUpgradePlot} onBuyLuxury={handleBuyLuxury} onBuyConsumable={handleBuyConsumable} getConsumablePrice={getConsumablePrice} onBack={() => setActiveScreen('farm')} />}
         {activeScreen === 'npc' && <NPCPanel player={player} offers={offers} onAcceptOffer={handleAcceptOffer} onBack={() => setActiveScreen('farm')} aiDialogue={aiDialogue} onGreet={handleGreet} offerResetIn={OFFER_RESET_INTERVAL - (Date.now() - lastOfferReset)} />}
         {activeScreen === 'lab' && <Fabrication player={player} onFabricate={(id) => {
           const budId = `${id}_bud`;

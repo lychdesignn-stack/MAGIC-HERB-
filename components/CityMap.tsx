@@ -68,7 +68,7 @@ const CityMap: React.FC<CityMapProps> = ({ player, onSale, onBack, offers }) => 
       const finalPrice = Math.floor(baseValue * amount * selectedTerritory.priceBonus);
 
       if (wasBusted) {
-          // Multa visual de 15%
+          // Multa visual de 15% do saldo total
           const fine = Math.floor(player.coins * 0.15);
           setFineAmount(fine);
           setBusted(true);
@@ -148,7 +148,9 @@ const CityMap: React.FC<CityMapProps> = ({ player, onSale, onBack, offers }) => 
           <div className="absolute inset-0 bg-black/80 backdrop-blur-md z-[100] flex flex-col items-center justify-center text-center p-10">
             <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mb-6" />
             <h3 className="font-cartoon text-2xl text-white mb-2 uppercase tracking-tighter">Negociando...</h3>
-            <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest animate-pulse italic">Fique frio, a grana tá vindo</p>
+            <div className="bg-red-500/10 px-4 py-2 rounded-full border border-red-500/20">
+               <p className="text-[9px] text-red-500 font-black uppercase tracking-[0.2em] animate-pulse">Cuidado: Área Monitorada</p>
+            </div>
           </div>
         )}
 
@@ -208,6 +210,8 @@ const CityMap: React.FC<CityMapProps> = ({ player, onSale, onBack, offers }) => 
                );
              }
 
+             const riskPercent = Math.round(selectedTerritory.riskChance * 100);
+
              return (
                <>
                  <div className="flex justify-between items-start mb-8">
@@ -216,7 +220,11 @@ const CityMap: React.FC<CityMapProps> = ({ player, onSale, onBack, offers }) => 
                      <p className="text-[9px] text-zinc-500 uppercase font-bold tracking-widest">{selectedTerritory.description}</p>
                    </div>
                    <div className="flex flex-col items-end gap-1">
-                     <span className="bg-red-500/10 text-red-500 px-3 py-1 rounded-lg text-[9px] font-black border border-red-500/20 uppercase">Risco: {Math.round(selectedTerritory.riskChance * 100)}%</span>
+                     <span className={`px-3 py-1 rounded-lg text-[10px] font-black border uppercase 
+                        ${riskPercent > 20 ? 'bg-red-600 text-white border-red-400 animate-pulse' : 'bg-red-500/10 text-red-500 border-red-500/20'}
+                     `}>
+                       Risco: {riskPercent}%
+                     </span>
                      <span className="bg-green-500/10 text-green-500 px-3 py-1 rounded-lg text-[9px] font-black border border-green-500/20 uppercase">Lucro: +{Math.round((selectedTerritory.priceBonus - 1) * 100)}%</span>
                    </div>
                  </div>
@@ -263,6 +271,12 @@ const CityMap: React.FC<CityMapProps> = ({ player, onSale, onBack, offers }) => 
                          <button onClick={() => setAmount(Math.min(player.inventory[sellingItem], amount + 1))} className="w-10 h-10 bg-white/5 rounded-xl font-bold text-lg hover:bg-white/10 border border-white/10 transition-all active:scale-90">+</button>
                          <button onClick={() => setAmount(player.inventory[sellingItem])} className="px-4 h-10 bg-indigo-600/20 text-indigo-400 border border-indigo-400/30 rounded-xl text-[9px] font-black uppercase hover:bg-indigo-600/30 transition-all active:scale-95">Max</button>
                        </div>
+                     </div>
+
+                     <div className="bg-red-500/10 p-3 rounded-2xl border border-red-500/20">
+                        <p className="text-[8px] text-red-500 font-black uppercase text-center leading-relaxed">
+                           Atenção: Se for pego, você perderá a mercadoria <br/>e pagará uma multa de 15% do seu saldo total.
+                        </p>
                      </div>
 
                      <button 

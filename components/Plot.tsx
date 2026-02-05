@@ -24,7 +24,6 @@ interface CannabisLeafProps {
 }
 
 const CannabisLeaf: React.FC<CannabisLeafProps> = ({ stemY, side, progress, color, isPruned }) => {
-  // Se estiver podado, as folhas somem completamente
   if (progress <= 0 || isPruned) return null;
   
   const scale = progress * 0.85; 
@@ -65,13 +64,11 @@ const CannabisBud: React.FC<CannabisBudProps> = ({ color, progress, scaleMult = 
         stroke="rgba(0,0,0,0.1)" 
         strokeWidth="0.8"
       />
-      {/* Pistilos laranja */}
       <g stroke="#f97316" strokeWidth="0.5" fill="none" opacity="0.9">
         <path d="M-3,-6 L-5,-9" />
         <path d="M3,-5 L5,-8" />
         <path d="M0,4 L0,8" />
       </g>
-      {/* Resina/Brilho */}
       {progress > 0.8 && (
         <circle cx="-2" cy="-3" r="0.8" fill="white" fillOpacity="0.7" className="animate-pulse" />
       )}
@@ -84,17 +81,75 @@ const PlotComponent: React.FC<PlotProps> = ({ plot, onPlant, onWater, onToggleLi
   const growth = plot.accumulatedGrowth;
   const isReady = growth >= 1;
   
-  // Altura aumentada para 45 (quase metade do lote)
   const maxStemHeight = 45;
   const currentStemHeight = growth * maxStemHeight;
 
-  // Nós de crescimento
   const nodes = [
     { y: 10, side: 'left' as const },
     { y: 20, side: 'right' as const },
     { y: 30, side: 'left' as const },
     { y: 40, side: 'right' as const },
   ];
+
+  // Configuração de Aura para raridades altas
+  const renderAura = () => {
+    if (!seed || seed.rarity === Rarity.COMMON || growth <= 0.05) return null;
+
+    const auraSize = 15 + (growth * 25);
+    const opacity = (plot.isLightOn ? 0.6 : 0.3) * growth;
+    
+    return (
+      <g className="pointer-events-none">
+        {/* Glow de Fundo */}
+        <circle 
+          cx="50" 
+          cy={85 - (currentStemHeight / 2)} 
+          r={auraSize} 
+          fill={seed.glowColor} 
+          style={{ 
+            filter: 'blur(12px)', 
+            opacity: opacity,
+            transition: 'all 0.5s ease'
+          }} 
+          className={seed.rarity === Rarity.MYTHIC ? 'animate-pulse' : ''}
+        />
+        
+        {/* Partículas para Lendárias e Míticas */}
+        {(seed.rarity === Rarity.LEGENDARY || seed.rarity === Rarity.MYTHIC) && (
+          <g opacity={opacity}>
+            {[...Array(6)].map((_, i) => (
+              <circle 
+                key={i}
+                r="1.2"
+                fill="white"
+                className="animate-pulse"
+                style={{
+                  animationDelay: `${i * 0.4}s`,
+                  transform: `translate(${50 + Math.sin(i + growth) * 15}px, ${85 - (currentStemHeight * (i/6))}px)`
+                }}
+              />
+            ))}
+          </g>
+        )}
+
+        {/* Anel de Energia para Míticas */}
+        {seed.rarity === Rarity.MYTHIC && (
+          <ellipse 
+            cx="50" 
+            cy={85 - currentStemHeight} 
+            rx={10 * growth} 
+            ry={4 * growth} 
+            fill="none" 
+            stroke="white" 
+            strokeWidth="0.5" 
+            strokeDasharray="2 4"
+            className="animate-spin"
+            style={{ transformOrigin: '50px center', animationDuration: '4s' }}
+          />
+        )}
+      </g>
+    );
+  };
 
   return (
     <div 
@@ -125,7 +180,10 @@ const PlotComponent: React.FC<PlotProps> = ({ plot, onPlant, onWater, onToggleLi
             {plot.isLightOn && <path d="M-15,10 L15,10 L35,85 L-35,85 Z" fill="url(#lamp-glow)" className="animate-pulse" />}
           </g>
 
-          {/* PLANTA (Ancorada em Y=85 para nascer de dentro da terra) */}
+          {/* Renderização da Aura (atrás da planta) */}
+          {renderAura()}
+
+          {/* PLANTA */}
           {seed && (
             <g style={{ 
               filter: plot.isLightOn ? 'none' : 'brightness(0.35) saturate(0.7)',
@@ -135,10 +193,11 @@ const PlotComponent: React.FC<PlotProps> = ({ plot, onPlant, onWater, onToggleLi
               <path 
                 d={`M50,85 L50,${85 - currentStemHeight}`} 
                 fill="none" 
-                stroke="#15803d" 
+                stroke={seed.rarity === Rarity.MYTHIC ? "white" : "#15803d"} 
                 strokeWidth={2 + growth * 2} 
                 strokeLinecap="round" 
                 className="transition-all duration-300"
+                style={seed.rarity === Rarity.MYTHIC ? { filter: 'drop-shadow(0 0 2px cyan)' } : {}}
               />
 
               {/* Sistema de Nós */}
@@ -178,7 +237,7 @@ const PlotComponent: React.FC<PlotProps> = ({ plot, onPlant, onWater, onToggleLi
             </g>
           )}
 
-          {/* Monte de Terra (Desenhado por cima para enterrar a planta) */}
+          {/* Monte de Terra */}
           <path d="M22,92 Q50,78 78,92 L75,98 L25,98 Z" fill={`url(#soil-grad-${plot.id})`} />
         </svg>
       </div>

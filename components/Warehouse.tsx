@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Player } from '../types';
-import { SEEDS } from '../constants';
+import { SEEDS, CONSUMABLES } from '../constants';
 
 interface WarehouseProps {
   player: Player;
@@ -9,20 +9,21 @@ interface WarehouseProps {
 }
 
 const Warehouse: React.FC<WarehouseProps> = ({ player, onBack }) => {
-  const [filter, setFilter] = useState<'all' | 'seeds' | 'buds' | 'hash'>('all');
+  const [filter, setFilter] = useState<'all' | 'seeds' | 'buds' | 'hash' | 'utility'>('all');
 
   const categories = [
     { id: 'all', label: 'Tudo', icon: '📦' },
     { id: 'seeds', label: 'Sementes', icon: '🌱' },
     { id: 'buds', label: 'Flores', icon: '🌿' },
     { id: 'hash', label: 'Hash', icon: '🍫' },
+    { id: 'utility', label: 'Upgrades', icon: '🧪' },
   ];
 
-  const renderInventoryItem = (id: string, name: string, type: 'seed' | 'bud' | 'hash', color: string) => {
+  const renderInventoryItem = (id: string, name: string, type: string, color: string, iconStr?: string, subText?: string) => {
     const quantity = player.inventory[id] || 0;
     if (quantity === 0) return null;
 
-    let icon = '🌱';
+    let icon = iconStr || '🌱';
     if (type === 'bud') icon = '🌿';
     if (type === 'hash') icon = '🍫';
 
@@ -40,6 +41,7 @@ const Warehouse: React.FC<WarehouseProps> = ({ player, onBack }) => {
         <div className="flex-1">
           <h4 className="font-bold text-sm text-white/90">{name}</h4>
           <p className="text-[10px] text-white/40 uppercase tracking-widest">{type}</p>
+          {subText && <p className="text-[8px] text-green-400 font-bold uppercase mt-1">{subText}</p>}
         </div>
         <div className="bg-purple-600/20 text-purple-400 px-3 py-1 rounded-full text-xs font-bold border border-purple-500/20">
           x{quantity}
@@ -71,14 +73,16 @@ const Warehouse: React.FC<WarehouseProps> = ({ player, onBack }) => {
       </div>
 
       <div className="flex flex-col gap-3 pb-24">
-        {SEEDS.map(seed => (
-          <React.Fragment key={seed.id}>
-            {(filter === 'all' || filter === 'seeds') && renderInventoryItem(seed.id, seed.name, 'seed', seed.color)}
-            {(filter === 'all' || filter === 'buds') && renderInventoryItem(`${seed.id}_bud`, `${seed.name} (Flor)`, 'bud', seed.color)}
-            {(filter === 'all' || filter === 'hash') && renderInventoryItem(`${seed.id}_hash`, `${seed.name} (Extrato)`, 'hash', seed.color)}
-          </React.Fragment>
-        ))}
+        {(filter === 'all' || filter === 'seeds') && SEEDS.map(seed => renderInventoryItem(seed.id, seed.name, 'seed', seed.color))}
+        {(filter === 'all' || filter === 'buds') && SEEDS.map(seed => renderInventoryItem(`${seed.id}_bud`, `${seed.name} (Flor)`, 'bud', seed.color))}
+        {(filter === 'all' || filter === 'hash') && SEEDS.map(seed => renderInventoryItem(`${seed.id}_hash`, `${seed.name} (Extrato)`, 'hash', seed.color))}
         
+        {(filter === 'all' || filter === 'utility') && CONSUMABLES.map(item => {
+           const count = player.inventory[item.id] || 0;
+           if (count === 0) return null;
+           return renderInventoryItem(item.id, item.name, 'upgrade passivo', '#facc15', item.icon, `Total: ${item.passiveBonusLabel}`);
+        })}
+
         {Object.values(player.inventory).every(v => v === 0) && (
           <div className="flex flex-col items-center justify-center py-20 text-white/20">
             <span className="text-5xl mb-4">📭</span>

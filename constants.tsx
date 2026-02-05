@@ -2,11 +2,11 @@
 import { Seed, Rarity, NPC, LuxuryItem, Title, Territory, ConsumableItem } from './types';
 
 export const TERRITORIES: Territory[] = [
-  { id: 'suburbio', name: 'Subúrbio Solar', riskLevel: 'low', riskChance: 0.05, priceBonus: 1.10, description: 'Vizinhança tranquila. Baixo risco.', color: '#22c55e', icon: '🏡' },
-  { id: 'porto_estelar', name: 'Porto Estelar', riskLevel: 'medium', riskChance: 0.15, priceBonus: 1.20, description: 'Contrabando intergaláctico.', color: '#3b82f6', icon: '🚢' },
-  { id: 'centro', name: 'Centro Neon', riskLevel: 'medium', riskChance: 0.25, priceBonus: 1.30, description: 'Movimentado. Policiamento moderado.', color: '#eab308', icon: '🏙️' },
-  { id: 'quebrada_astral', name: 'Quebrada Astral', riskLevel: 'high', riskChance: 0.35, priceBonus: 1.40, description: 'Risco alto, lucro astronômico.', color: '#ef4444', icon: '🏚️' },
-  { id: 'favela_hightech', name: 'Favela High-Tech', riskLevel: 'high', riskChance: 0.45, priceBonus: 1.50, description: 'Zona proibida. Lucro máximo de 50%.', color: '#f472b6', icon: '🧬' }
+  { id: 'suburbio', name: 'Subúrbio Solar', riskLevel: 'low', riskChance: 0.05, priceBonus: 1.01, description: 'Vizinhança tranquila. Baixo risco.', color: '#22c55e', icon: '🏡' },
+  { id: 'porto_estelar', name: 'Porto Estelar', riskLevel: 'medium', riskChance: 0.12, priceBonus: 1.02, description: 'Contrabando intergaláctico.', color: '#3b82f6', icon: '🚢' },
+  { id: 'centro', name: 'Centro Neon', riskLevel: 'medium', riskChance: 0.20, priceBonus: 1.03, description: 'Movimentado. Policiamento moderado.', color: '#eab308', icon: '🏙️' },
+  { id: 'quebrada_astral', name: 'Quebrada Astral', riskLevel: 'high', riskChance: 0.30, priceBonus: 1.04, description: 'Risco alto, lucro marginal.', color: '#ef4444', icon: '🏚️' },
+  { id: 'favela_hightech', name: 'Favela High-Tech', riskLevel: 'high', riskChance: 0.40, priceBonus: 1.05, description: 'Zona proibida. Lucro máximo de 5%.', color: '#f472b6', icon: '🧬' }
 ];
 
 export const AVATAR_OPTIONS = [
@@ -86,9 +86,9 @@ export const UPGRADE_COSTS = {
 };
 
 export const CONSUMABLES: ConsumableItem[] = [
-  { id: 'fertilizante_bio', name: 'Fertilizante Bio', price: 150, currency: 'coins', description: 'Aumenta a produção do lote em +1 bud.', icon: '🧪', effect: 'fertilize' },
-  { id: 'hidro_boost', name: 'Hidro Boost', price: 25, currency: 'hashCoins', description: 'Regue todas as plantas da fazenda instantaneamente.', icon: '💧', effect: 'water_all' },
-  { id: 'chrono_trigger', name: 'Chrono Trigger', price: 80, currency: 'hashCoins', description: 'Acelera o crescimento das plantas significativamente.', icon: '⚡', effect: 'speed_up' }
+  { id: 'fertilizante_bio', name: 'Fertilizante Bio', price: 200, currency: 'coins', description: 'Bônus passivo de colheita.', icon: '🧪', effect: 'fertilize', passiveBonusLabel: '+0.5 Bud/Colheita' },
+  { id: 'hidro_boost', name: 'Hidro Boost', price: 40, currency: 'hashCoins', description: 'Aumenta velocidade de crescimento global.', icon: '💧', effect: 'water_all', passiveBonusLabel: '+10% Speed' },
+  { id: 'chrono_trigger', name: 'Chrono Trigger', price: 150, currency: 'hashCoins', description: 'Alta aceleração temporal constante.', icon: '⚡', effect: 'speed_up', passiveBonusLabel: '+25% Speed' }
 ];
 
 export const LUXURY_ITEMS: LuxuryItem[] = [

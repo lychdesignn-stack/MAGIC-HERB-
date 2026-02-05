@@ -49,6 +49,7 @@ export interface ConsumableItem {
   description: string;
   icon: string;
   effect: 'fertilize' | 'speed_up' | 'water_all';
+  passiveBonusLabel: string;
 }
 
 export interface Offer {

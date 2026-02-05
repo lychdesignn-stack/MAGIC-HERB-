@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Player, Rarity, Plot, LuxuryItem } from '../types';
+import { Player, Rarity, Plot, LuxuryItem, ConsumableItem } from '../types';
 import { SEEDS, UPGRADE_COSTS, UPGRADE_LIMITS, LUXURY_ITEMS, CONSUMABLES, TITLES } from '../constants';
 
 interface ShopProps {
@@ -10,10 +10,11 @@ interface ShopProps {
   onUpgradePlot: (plotId: number) => void;
   onBuyLuxury: (itemId: string) => void;
   onBuyConsumable: (itemId: string) => void;
+  getConsumablePrice: (itemId: string, basePrice: number) => number;
   onBack: () => void;
 }
 
-const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyLuxury, onBuyConsumable, onBack }) => {
+const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyLuxury, onBuyConsumable, getConsumablePrice, onBack }) => {
   const [activeTab, setActiveTab] = useState<'seeds' | 'items' | 'premium' | 'titles' | 'lands'>('seeds');
 
   const getRarityStyles = (rarity: Rarity) => {
@@ -101,16 +102,23 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
         }
 
         {activeTab === 'items' && CONSUMABLES.map(item => {
-            const canAfford = item.currency === 'coins' ? player.coins >= item.price : player.hashCoins >= item.price;
+            const currentPrice = getConsumablePrice(item.id, item.price);
+            const count = player.inventory[item.id] || 0;
+            const canAfford = item.currency === 'coins' ? player.coins >= currentPrice : player.hashCoins >= currentPrice;
+            
             return (
               <div key={item.id} className="bg-black/40 backdrop-blur-xl border border-white/5 p-4 rounded-[2rem] flex items-center gap-4 shadow-xl">
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl bg-black/40 border border-white/10">{item.icon}</div>
                 <div className="flex-1">
-                  <h3 className="font-black text-xs text-white uppercase">{item.name}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-black text-xs text-white uppercase">{item.name}</h3>
+                    <span className="bg-indigo-600/30 text-indigo-400 text-[8px] px-2 py-0.5 rounded-md border border-indigo-400/20 font-black">NÍVEL {count}</span>
+                  </div>
                   <p className="text-[8px] text-white/30 leading-tight mt-1">{item.description}</p>
+                  <p className="text-[9px] text-green-400 font-black uppercase mt-1">Acumulado: {item.passiveBonusLabel}</p>
                 </div>
                 <button onClick={() => onBuyConsumable(item.id)} disabled={!canAfford} className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase border transition-all ${canAfford ? 'bg-white text-black border-white' : 'opacity-20 border-white/10 grayscale'}`}>
-                  {item.currency === 'coins' ? '🪙' : '🍪'} {item.price}
+                  {item.currency === 'coins' ? '🪙' : '🍪'} {formatCurrency(currentPrice)}
                 </button>
               </div>
             );

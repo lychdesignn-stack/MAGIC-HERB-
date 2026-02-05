@@ -41,6 +41,13 @@ const ProfileView: React.FC<ProfileViewProps> = ({ player, onBuyLuxury, onToggle
 
   const freeThemes = LUXURY_ITEMS.filter(i => i.category === 'profile_bg' && i.price === 0);
 
+  // Itens de Gear Ativos
+  const activeGear = [
+    { label: 'Capa', item: LUXURY_ITEMS.find(i => i.id === player.activeCosmetics.cape) },
+    { label: 'Joia', item: LUXURY_ITEMS.find(i => i.id === player.activeCosmetics.jewelry) },
+    { label: 'Luxo', item: LUXURY_ITEMS.find(i => i.id === player.activeCosmetics.luxury) }
+  ].filter(g => g.item);
+
   return (
     <div className="w-full flex flex-col gap-6 animate-in slide-in-from-right duration-300">
       {/* Header do Perfil */}
@@ -73,7 +80,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ player, onBuyLuxury, onToggle
                   </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2 mb-3">
                   <div className="bg-black/40 backdrop-blur-md rounded-xl p-2 border border-white/5">
                      <p className="text-[6px] text-white/40 uppercase font-black">Colheitas</p>
                      <p className="text-xs font-cartoon text-white">{player.stats?.totalPlanted || 0}</p>
@@ -83,6 +90,18 @@ const ProfileView: React.FC<ProfileViewProps> = ({ player, onBuyLuxury, onToggle
                      <p className="text-xs font-cartoon text-white">{player.stats?.totalSold || 0}</p>
                   </div>
               </div>
+
+              {/* EXIBIÇÃO DE EQUIPAMENTOS ATIVOS (HUB) */}
+              {activeGear.length > 0 && (
+                <div className="flex gap-2">
+                   {activeGear.map((gear, idx) => (
+                     <div key={idx} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-1.5 flex flex-col items-center justify-center min-w-[32px] shadow-lg animate-in zoom-in duration-300">
+                        <span className="text-sm">{gear.item?.icon}</span>
+                        <span className="text-[5px] font-black uppercase text-white/40 mt-0.5">{gear.label}</span>
+                     </div>
+                   ))}
+                </div>
+              )}
             </div>
           </div>
 
