@@ -5,6 +5,19 @@ export enum Rarity {
   LEGENDARY = 'Legendary'
 }
 
+export type RiskLevel = 'low' | 'medium' | 'high';
+
+export interface Territory {
+  id: string;
+  name: string;
+  riskLevel: RiskLevel;
+  riskChance: number; // 0 a 1
+  priceMultiplier: number;
+  description: string;
+  color: string;
+  icon: string;
+}
+
 export interface Title {
   id: string;
   name: string;

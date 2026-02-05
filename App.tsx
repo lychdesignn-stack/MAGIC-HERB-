@@ -10,6 +10,7 @@ import NPCPanel from './components/NPCPanel';
 import Fabrication from './components/Fabrication';
 import Warehouse from './components/Warehouse';
 import ProfileView from './components/ProfileView';
+import CityMap from './components/CityMap';
 import EventOverlay from './components/EventOverlay';
 import { GoogleGenAI } from "@google/genai";
 
@@ -45,7 +46,7 @@ const App: React.FC = () => {
   const [player, setPlayer] = useState<Player>(INITIAL_PLAYER);
   const [plots, setPlots] = useState<Plot[]>([]);
   const [offers, setOffers] = useState<Offer[]>([]);
-  const [activeScreen, setActiveScreen] = useState<'farm' | 'shop' | 'npc' | 'lab' | 'warehouse' | 'profile'>('farm');
+  const [activeScreen, setActiveScreen] = useState<'farm' | 'shop' | 'npc' | 'lab' | 'warehouse' | 'profile' | 'map'>('farm');
   const [currentEvent, setCurrentEvent] = useState<string | null>(null);
   const [aiDialogue, setAiDialogue] = useState<string>("");
   const [lastOfferReset, setLastOfferReset] = useState<number>(Date.now());
@@ -210,6 +211,26 @@ const App: React.FC = () => {
     }
   };
 
+  const handleStreetSale = (itemId: string, quantity: number, price: number, wasBusted: boolean) => {
+    if (wasBusted) {
+      // Perda de inventário e multa
+      const penalty = Math.floor(player.coins * 0.15);
+      setPlayer(prev => ({
+        ...prev,
+        coins: Math.max(0, prev.coins - penalty),
+        inventory: { ...prev.inventory, [itemId]: (prev.inventory[itemId] || 0) - quantity }
+      }));
+      alert(`🚔 A POLÍCIA CHEGOU! Você perdeu o produto e foi multado em 🪙 ${penalty}!`);
+    } else {
+      setPlayer(prev => ({
+        ...prev,
+        coins: prev.coins + price,
+        inventory: { ...prev.inventory, [itemId]: (prev.inventory[itemId] || 0) - quantity },
+        level: prev.level + 0.8
+      }));
+    }
+  };
+
   const handleBuy = (seedId: string, cost: number, useHashCoin: boolean = false) => {
     const seed = SEEDS.find(s => s.id === seedId);
     if (!seed) return;
@@ -291,7 +312,13 @@ const App: React.FC = () => {
 
   return (
     <div className="h-screen w-full psychedelic-bg text-white flex flex-col overflow-hidden select-none">
-      <HUD player={player} currentEvent={currentEvent} onOpenProfile={() => setActiveScreen('profile')} totalBonus={calculateTotalBonus()} />
+      <HUD 
+        player={player} 
+        currentEvent={currentEvent} 
+        onOpenProfile={() => setActiveScreen('profile')} 
+        onOpenMap={() => setActiveScreen('map')}
+        totalBonus={calculateTotalBonus()} 
+      />
       <main className="flex-1 overflow-y-auto pt-4 px-4 custom-scrollbar pb-10">
         {activeScreen === 'farm' && <FarmGrid plots={plots} onPlant={handlePlant} onWater={handleWater} onPrune={handlePrune} onHarvest={handleHarvest} onUpgrade={handleUpgradePlot} inventory={player.inventory} player={player} />}
         {activeScreen === 'warehouse' && <Warehouse player={player} onBack={() => setActiveScreen('farm')} />}
@@ -309,8 +336,15 @@ const App: React.FC = () => {
             onBack={() => setActiveScreen('farm')} 
           />
         )}
+        {activeScreen === 'map' && (
+          <CityMap 
+            player={player} 
+            onSale={handleStreetSale}
+            onBack={() => setActiveScreen('farm')}
+          />
+        )}
       </main>
-      <BottomNav activeScreen={activeScreen} onNavigate={setActiveScreen} />
+      <BottomNav activeScreen={activeScreen === 'map' ? 'farm' : activeScreen} onNavigate={setActiveScreen} />
       <EventOverlay currentEvent={currentEvent} />
     </div>
   );

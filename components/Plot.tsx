@@ -150,10 +150,11 @@ const PlotComponent: React.FC<PlotProps> = ({ plot, selectedSeedId, onPlant, onW
 
   return (
     <div className={`relative w-full aspect-square rounded-[3rem] overflow-hidden border-2 ${getRarityStyle()} transition-all duration-500 active:scale-95 group`}>
-      <div className="absolute top-5 right-5 z-50">
-        <div className="bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1 shadow-lg">
-          <span className="text-[10px] font-black text-white/50">×</span>
-          <span className="text-[12px] font-cartoon text-white">{plot.capacity}</span>
+      {/* Badge de Capacidade Minimalista */}
+      <div className="absolute top-4 right-4 z-50">
+        <div className="bg-white/10 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/5 flex items-center gap-1">
+          <span className="text-[10px] font-black text-white/40 tracking-tighter">CAP</span>
+          <span className="text-[10px] font-bold text-white/80">{plot.capacity}</span>
         </div>
       </div>
 
@@ -211,6 +212,7 @@ const PlotComponent: React.FC<PlotProps> = ({ plot, selectedSeedId, onPlant, onW
 
       <div className="absolute bottom-[6%] left-1/2 -translate-x-1/2 w-32 h-6 bg-black/60 rounded-[100%] blur-md pointer-events-none" />
 
+      {/* Botões de Ação Modernos e Minimalistas */}
       <button 
         onClick={() => {
           if (!plot.seedId) onPlant();
@@ -218,17 +220,36 @@ const PlotComponent: React.FC<PlotProps> = ({ plot, selectedSeedId, onPlant, onW
           else if (isReadyForPruning && !plot.isPruned) onPrune();
           else if (plot.isPruned) onHarvest();
         }}
-        className="absolute inset-0 z-40 flex items-center justify-center bg-transparent"
+        className="absolute inset-0 z-40 flex items-center justify-center bg-transparent group"
       >
         {!plot.seedId && selectedSeedId && SEEDS.find(s => s.id === selectedSeedId)?.rarity === plot.type && (
-          <div className="bg-white/20 px-6 py-2 rounded-full text-[11px] font-black uppercase animate-bounce border border-white/30 backdrop-blur-md shadow-xl text-white">CULTIVAR</div>
+          <div className="bg-white/10 backdrop-blur-md px-6 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/20 shadow-xl text-white/80 group-hover:bg-white/20 transition-all">
+            CULTIVAR
+          </div>
         )}
-        {plot.seedId && !plot.isWatered && <div className="text-6xl animate-bounce drop-shadow-[0_0_20px_rgba(59,130,246,0.8)]">💧</div>}
+        
+        {plot.seedId && !plot.isWatered && (
+          <div className="flex flex-col items-center gap-2">
+            <div className="text-5xl animate-bounce drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]">💧</div>
+            <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Regar</span>
+          </div>
+        )}
+
         {isReadyForPruning && !plot.isPruned && (
-          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-4xl animate-pulse shadow-[0_0_50px_white] border-2 border-pink-500 transform rotate-12">✂️</div>
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-14 h-14 bg-white/10 backdrop-blur-lg rounded-full flex items-center justify-center text-3xl border border-white/20 shadow-2xl animate-pulse">✂️</div>
+            <span className="text-[9px] font-black text-pink-400 uppercase tracking-widest">Podar</span>
+          </div>
         )}
+
         {plot.isPruned && (
-          <div className="bg-white text-black px-10 py-4 rounded-full font-cartoon text-[14px] animate-pulse border-2 border-white/40 shadow-2xl">COLHER {plot.capacity}×</div>
+          <div className="flex flex-col items-center gap-2 px-6 py-4 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.5)] active:scale-90 transition-all">
+            <div className="text-4xl animate-bounce">📦</div>
+            <div className="flex flex-col items-center">
+               <span className="text-[11px] font-black text-white uppercase tracking-widest">Colher</span>
+               <span className="text-[8px] font-bold text-white/40">+{plot.capacity} unidades</span>
+            </div>
+          </div>
         )}
       </button>
     </div>

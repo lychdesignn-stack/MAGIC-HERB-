@@ -8,10 +8,11 @@ interface HUDProps {
   player: Player;
   currentEvent: string | null;
   onOpenProfile: () => void;
+  onOpenMap: () => void;
   totalBonus?: number;
 }
 
-const HUD: React.FC<HUDProps> = ({ player, currentEvent, onOpenProfile, totalBonus = 0 }) => {
+const HUD: React.FC<HUDProps> = ({ player, currentEvent, onOpenProfile, onOpenMap, totalBonus = 0 }) => {
   const activeThemeId = player.activeCosmetics.hud_theme;
   const activeTheme = LUXURY_ITEMS.find(i => i.id === activeThemeId);
   
@@ -60,13 +61,21 @@ const HUD: React.FC<HUDProps> = ({ player, currentEvent, onOpenProfile, totalBon
         )}
       </div>
 
-      <button 
-        onClick={onOpenProfile}
-        className="active:scale-90 transition-transform relative group"
-      >
-        <CharacterAvatar player={player} size="sm" />
-        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" />
-      </button>
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={onOpenMap}
+          className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-2xl active:scale-90 transition-all hover:bg-indigo-600/40 shadow-lg"
+        >
+          🗺️
+        </button>
+        <button 
+          onClick={onOpenProfile}
+          className="active:scale-90 transition-transform relative group"
+        >
+          <CharacterAvatar player={player} size="sm" />
+          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" />
+        </button>
+      </div>
     </div>
   );
 };
