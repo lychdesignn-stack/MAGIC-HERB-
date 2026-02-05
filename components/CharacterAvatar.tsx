@@ -30,10 +30,7 @@ const CharacterAvatar: React.FC<CharacterAvatarProps> = ({ player, size = 'md' }
       {player.activeTitle === 'deus_verde' && (
         <div className="absolute inset-0 bg-gradient-to-t from-green-500/40 to-transparent animate-pulse z-0" />
       )}
-      {player.activeTitle === 'imperador' && (
-        <div className="absolute inset-0 bg-gradient-to-t from-amber-500/40 to-transparent animate-pulse z-0" />
-      )}
-
+      
       {/* Personagem Principal */}
       <img 
         src={avatarUrl} 
@@ -43,7 +40,7 @@ const CharacterAvatar: React.FC<CharacterAvatarProps> = ({ player, size = 'md' }
 
       {/* Sobreposições de Itens de Luxo */}
       {activeCape && (
-        <div className="absolute -left-1 top-1 z-30 pointer-events-none animate-bounce" style={{ animationDuration: '3s' }}>
+        <div className="absolute -left-1 top-1 z-30 pointer-events-none">
           <span className="text-2xl filter drop-shadow-md">{activeCape.icon}</span>
         </div>
       )}

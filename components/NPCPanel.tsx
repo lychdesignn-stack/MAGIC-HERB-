@@ -48,6 +48,19 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBa
     return val.toString();
   };
 
+  const getRarityBadgeStyles = (rarity?: Rarity) => {
+    switch (rarity) {
+      case Rarity.MYTHIC:
+        return 'bg-emerald-600 border-emerald-400 text-white shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse-gold';
+      case Rarity.LEGENDARY:
+        return 'bg-amber-500 border-amber-300 text-black shadow-[0_0_10px_rgba(245,158,11,0.8)]';
+      case Rarity.RARE:
+        return 'bg-purple-600 border-purple-400 text-white';
+      default:
+        return 'bg-zinc-700 border-zinc-500 text-zinc-300';
+    }
+  };
+
   return (
     <div className="w-full flex flex-col gap-5 animate-in slide-in-from-right duration-300">
       <div className="flex items-end justify-between px-1">
@@ -76,7 +89,8 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBa
             
             return (
               <div key={npc.id} className="flex-shrink-0 flex flex-col items-center gap-2 w-20 transition-all duration-300">
-                <div className={`relative ${!unlocked ? 'grayscale' : ''}`}>
+                <div className={`relative ${!unlocked ? 'grayscale-[0.8]' : ''}`}>
+                   {/* Avatar do NPC */}
                    <div className={`w-14 h-14 rounded-2xl border border-white/10 overflow-hidden relative z-10 flex items-center justify-center transition-all ${unlocked ? 'bg-zinc-800 shadow-lg' : 'bg-zinc-950/90 border-dashed opacity-40 shadow-inner'}`}>
                      {unlocked ? (
                        <img src={npc.avatar} className="w-full h-full object-cover pointer-events-none" />
@@ -84,6 +98,17 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBa
                        <span className="text-xl opacity-60">🔒</span>
                      )}
                    </div>
+                   
+                   {/* O SELO (CELLIN) DE RARIDADE */}
+                   {npc.rarity && (
+                     <div className="absolute -top-1.5 -left-1.5 z-30 pointer-events-none">
+                        <span className={`text-[6px] font-black px-1.5 py-0.5 rounded-md border uppercase tracking-tighter ${getRarityBadgeStyles(npc.rarity)} ${unlocked ? '' : 'opacity-60'}`}>
+                          {npc.rarity}
+                        </span>
+                     </div>
+                   )}
+
+                   {/* Ícone de Reputação */}
                    {unlocked && (
                      <div className={`absolute -bottom-1.5 -right-1.5 w-6 h-6 ${bg} backdrop-blur-md rounded-full flex items-center justify-center text-[10px] border border-white/20 z-20 shadow-xl`}>
                        {icon}
@@ -91,14 +116,14 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBa
                    )}
                 </div>
                 <div className="text-center w-full">
-                  <span className={`text-[9px] font-black block truncate leading-none mb-1 ${unlocked ? 'text-white/80' : 'text-white/20 uppercase'}`}>
-                    {unlocked ? npc.name : 'BLOQUEADO'}
+                  <span className={`text-[9px] font-black block truncate leading-none mb-1 ${unlocked ? 'text-white/80' : 'text-white/30 uppercase'}`}>
+                    {npc.name}
                   </span>
                   {unlocked ? (
                     <span className={`text-[7px] font-black uppercase ${color} tracking-tighter`}>{label}</span>
                   ) : (
                     <span className="text-[7px] text-zinc-600 font-bold uppercase tracking-tighter truncate max-w-full block">
-                       {npc.rarityRequired}
+                       {npc.rarityRequired || 'INICIANTE'}
                     </span>
                   )}
                 </div>

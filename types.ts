@@ -64,17 +64,25 @@ export interface Offer {
 export interface LuxuryItem {
   id: string;
   name: string;
-  category: 'cape' | 'jewelry' | 'luxury' | 'hud_theme';
+  category: 'cape' | 'jewelry' | 'luxury' | 'hud_theme' | 'profile_bg';
+  rarity: Rarity;
   price: number;
   currency: 'coins' | 'hashCoins';
   icon: string;
   description: string;
-  harvestBonus?: number;
+  harvestBonus: number;
+  unlockCondition?: {
+    type: 'level' | 'reputation' | 'stats';
+    value: number;
+    npcId?: string;
+    label: string;
+  };
   style?: {
     bg: string;
     border: string;
     text: string;
     accent: string;
+    effectClass?: string;
   };
 }
 
@@ -96,7 +104,7 @@ export interface Player {
   ownedLuxuryItems: string[];
   ownedTitles: string[];
   activeTitle: string | null;
-  activeCosmetics: Record<'cape' | 'jewelry' | 'luxury' | 'hud_theme', string | null>;
+  activeCosmetics: Record<'cape' | 'jewelry' | 'luxury' | 'hud_theme' | 'profile_bg', string | null>;
 }
 
 export interface Plot {
@@ -104,7 +112,9 @@ export interface Plot {
   type: Rarity;
   seedId: string | null;
   plantedAt: number | null;
+  accumulatedGrowth: number; // 0 a 1
   isWatered: boolean;
+  isLightOn: boolean; // Nova propriedade
   isPruned: boolean;
   isUnlocked: boolean;
   isFertilized: boolean;
@@ -119,4 +129,5 @@ export interface NPC {
   demand: string[];
   multiplier: number;
   rarityRequired: Rarity | null;
+  rarity?: Rarity;
 }
