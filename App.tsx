@@ -14,8 +14,8 @@ import CityMap from './components/CityMap';
 import EventOverlay from './components/EventOverlay';
 import { GoogleGenAI } from "@google/genai";
 
-const OFFER_RESET_INTERVAL = 2 * 60 * 1000; 
-const SAVE_KEY = 'HERB_HAVEN_SAVE_V15'; 
+const OFFER_RESET_INTERVAL = 5 * 60 * 1000; // Aumentado para 5 minutos
+const SAVE_KEY = 'HERB_HAVEN_SAVE_V15_ECON'; 
 
 const createInitialInventory = () => {
   const inv: Record<string, number> = {};
@@ -54,7 +54,6 @@ const App: React.FC = () => {
   const [aiDialogue, setAiDialogue] = useState<string>("");
   const [lastOfferReset, setLastOfferReset] = useState<number>(Date.now());
 
-  // BÔNUS PASSIVOS DOS UTILITÁRIOS
   const passiveBonuses = useMemo(() => {
     const fertCount = player.inventory['fertilizante_bio'] || 0;
     const hidroCount = player.inventory['hidro_boost'] || 0;
@@ -101,30 +100,31 @@ const App: React.FC = () => {
     const currentStock = currentPlayer.inventory[targetItemId] || 0;
     
     let quantity: number;
-    const levelBonusQty = Math.floor(currentPlayer.level / 5);
+    const levelBonusQty = Math.floor(currentPlayer.level / 8); // Reduzida progressão de qtd por nível
     if (currentStock > 0) {
-      quantity = Math.max(1, Math.floor(currentStock * (0.4 + Math.random() * 0.6)));
+      quantity = Math.max(1, Math.floor(currentStock * (0.3 + Math.random() * 0.5)));
     } else {
-      quantity = (isHash ? (Math.floor(Math.random() * 2) + 1) : (Math.floor(Math.random() * 4) + 2)) + levelBonusQty;
+      quantity = (isHash ? (Math.floor(Math.random() * 2) + 1) : (Math.floor(Math.random() * 3) + 1)) + levelBonusQty;
     }
 
     let currency: 'coins' | 'hashCoins' = forceHash ? 'hashCoins' : 'coins';
     if (!forceHash) {
       if (seed.rarity === Rarity.LEGENDARY || seed.rarity === Rarity.MYTHIC) {
-        currency = Math.random() > 0.4 ? 'hashCoins' : 'coins';
+        currency = Math.random() > 0.5 ? 'hashCoins' : 'coins';
       } else if (seed.rarity === Rarity.RARE) {
-        currency = Math.random() > 0.85 ? 'hashCoins' : 'coins';
+        currency = Math.random() > 0.9 ? 'hashCoins' : 'coins';
       }
     }
 
     const totalWealth = currentPlayer.coins + (currentPlayer.hashCoins * 1000);
-    const wealthFactor = Math.max(0.4, Math.pow(Math.max(1, totalWealth) / 1000, 0.32));
+    // Nerf drástico no wealthFactor: agora cresce muito mais devagar
+    const wealthFactor = Math.max(0.6, Math.pow(Math.max(1, totalWealth) / 1000, 0.12));
 
-    let baseValue = isHash ? seed.baseValue * 4.8 : seed.baseValue * 1.2;
+    let baseValue = isHash ? seed.baseValue * 4.0 : seed.baseValue * 1.1;
     let finalPrice: number;
 
     if (currency === 'hashCoins') {
-      const hashBase = (baseValue * quantity * npc.multiplier * wealthFactor) / 850;
+      const hashBase = (baseValue * quantity * npc.multiplier * wealthFactor) / 1200; // Divisor aumentado
       finalPrice = Math.max(1, Math.floor(hashBase));
     } else {
       finalPrice = Math.floor(baseValue * quantity * npc.multiplier * wealthFactor);
@@ -137,14 +137,15 @@ const App: React.FC = () => {
       quantity, 
       price: finalPrice, 
       currency, 
-      reputationAward: Math.floor(15 * npc.multiplier) 
+      reputationAward: Math.floor(10 * npc.multiplier) 
     };
   }, []);
 
   const refreshOffers = useCallback(() => {
     setLastOfferReset(Date.now());
     const newOffers: Offer[] = [];
-    const offerCount = player.level >= 10 ? 5 : 4;
+    // Máximo de 3 ofertas agora
+    const offerCount = player.level >= 15 ? 3 : 2;
     
     for(let i=0; i<offerCount; i++) {
       const o = generateRandomOffer(player);
@@ -268,7 +269,7 @@ const App: React.FC = () => {
     setPlayer(prev => ({ 
       ...prev, 
       inventory: { ...prev.inventory, [budId]: (prev.inventory[budId] || 0) + amount },
-      level: prev.level + (0.05 * plot.capacity)
+      level: prev.level + (0.04 * plot.capacity) // Ligeiro nerf no XP
     }));
     setPlots(prev => prev.map(p => p.id === plotId ? { ...p, seedId: null, plantedAt: null, accumulatedGrowth: 0, isWatered: false, isLightOn: false, isPruned: false, isFertilized: false } : p));
   };
@@ -312,7 +313,6 @@ const App: React.FC = () => {
       newInventory[itemId] = Math.max(0, (newInventory[itemId] || 0) - quantity);
 
       if (wasBusted) {
-        // Nova multa: Perde 15% do saldo atual ao ser pego
         const fine = Math.floor(prev.coins * 0.15);
         return {
           ...prev,
@@ -321,7 +321,6 @@ const App: React.FC = () => {
         };
       }
 
-      // Venda bem-sucedida: Ganha o lucro do território
       return {
         ...prev,
         coins: prev.coins + price,
@@ -359,10 +358,9 @@ const App: React.FC = () => {
     }
   };
 
-  // CÁLCULO DE PREÇO ESCALÁVEL
   const getConsumablePrice = useCallback((itemId: string, basePrice: number) => {
     const count = player.inventory[itemId] || 0;
-    return Math.floor(basePrice * Math.pow(1.5, count));
+    return Math.floor(basePrice * Math.pow(1.6, count)); // Aumentado escalonamento de custo
   }, [player.inventory]);
 
   const handleBuyConsumable = (itemId: string) => {

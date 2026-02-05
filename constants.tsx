@@ -69,20 +69,20 @@ export const SEEDS: Seed[] = [
 ];
 
 export const NPCS: NPC[] = [
-  { id: 'n1', name: '@Cellin', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=cellin', dialogue: "Qualidade é a única moeda que importa.", demand: ['godfather_og', 'sun_walker'], multiplier: 2.8, rarityRequired: null, rarity: Rarity.LEGENDARY },
-  { id: 'n2', name: 'ICKY767', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix', dialogue: "Icky in the house!", demand: ['sticky_icky', 'kush_comum'], multiplier: 1.5, rarityRequired: null, rarity: Rarity.COMMON },
-  { id: 'n3', name: 'CPXINSANE', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kaden&skinColor=45201e', dialogue: "Bora dominar o mapa.", demand: ['lemon_skunk', 'ak47'], multiplier: 1.8, rarityRequired: null, rarity: Rarity.RARE },
-  { id: 'n4', name: 'IGOWEED', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=igo', dialogue: "Só o puro aroma.", demand: ['purple_haze', 'amnesia_haze'], multiplier: 1.6, rarityRequired: null, rarity: Rarity.RARE },
-  { id: 'n5', name: 'Vovó Maria', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=grandma', dialogue: "Para o meu chá...", demand: ['lemon_skunk', 'acapulco_gold'], multiplier: 1.2, rarityRequired: null, rarity: Rarity.COMMON },
-  { id: 'n6', name: 'Dancrema', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Dancrema&top=shortHair&accessories=round&clothes=suitAndTie&backgroundColor=facc15&clothingColor=3c3c3c', dialogue: "Negócios de alto nível exigem produtos de alto nível. Cadê o meu creme?", demand: ['white_widow', 'moon_rock'], multiplier: 3.5, rarityRequired: Rarity.LEGENDARY, rarity: Rarity.MYTHIC },
+  { id: 'n1', name: '@Cellin', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=cellin', dialogue: "Qualidade é a única moeda que importa.", demand: ['godfather_og', 'sun_walker'], multiplier: 1.8, rarityRequired: null, rarity: Rarity.LEGENDARY },
+  { id: 'n2', name: 'ICKY767', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix', dialogue: "Icky in the house!", demand: ['sticky_icky', 'kush_comum'], multiplier: 1.3, rarityRequired: null, rarity: Rarity.COMMON },
+  { id: 'n3', name: 'CPXINSANE', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kaden&skinColor=45201e', dialogue: "Bora dominar o mapa.", demand: ['lemon_skunk', 'ak47'], multiplier: 1.4, rarityRequired: null, rarity: Rarity.RARE },
+  { id: 'n4', name: 'IGOWEED', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=igo', dialogue: "Só o puro aroma.", demand: ['purple_haze', 'amnesia_haze'], multiplier: 1.35, rarityRequired: null, rarity: Rarity.RARE },
+  { id: 'n5', name: 'Vovó Maria', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=grandma', dialogue: "Para o meu chá...", demand: ['lemon_skunk', 'acapulco_gold'], multiplier: 1.1, rarityRequired: null, rarity: Rarity.COMMON },
+  { id: 'n6', name: 'Dancrema', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Dancrema&top=shortHair&accessories=round&clothes=suitAndTie&backgroundColor=facc15&clothingColor=3c3c3c', dialogue: "Negócios de alto nível exigem produtos de alto nível.", demand: ['white_widow', 'moon_rock'], multiplier: 2.4, rarityRequired: Rarity.LEGENDARY, rarity: Rarity.MYTHIC },
 ];
 
 export const UPGRADE_LIMITS = { [Rarity.COMMON]: 3, [Rarity.RARE]: 5, [Rarity.LEGENDARY]: 8, [Rarity.MYTHIC]: 12 };
 export const UPGRADE_COSTS = {
   [Rarity.COMMON]: { coins: 1500, hash: 0 },
-  [Rarity.RARE]: { coins: 15000, hash: 40 },
-  [Rarity.LEGENDARY]: { coins: 120000, hash: 400 },
-  [Rarity.MYTHIC]: { coins: 800000, hash: 2000 }
+  [Rarity.RARE]: { coins: 35000, hash: 80 },
+  [Rarity.LEGENDARY]: { coins: 250000, hash: 800 },
+  [Rarity.MYTHIC]: { coins: 1500000, hash: 5000 }
 };
 
 export const CONSUMABLES: ConsumableItem[] = [
@@ -92,41 +92,38 @@ export const CONSUMABLES: ConsumableItem[] = [
 ];
 
 export const LUXURY_ITEMS: LuxuryItem[] = [
-  // --- TEMAS GRATUITOS ---
+  // ... (Luxury items remain visually same but impact economy by being a coin sink)
   { id: 'free_green', name: 'Verde Natural', category: 'profile_bg', rarity: Rarity.COMMON, price: 0, currency: 'coins', icon: '🟢', description: 'O clássico cultivo.', harvestBonus: 0, style: { bg: 'from-green-800 to-green-950', border: 'border-green-500/30', text: 'text-green-400', accent: 'bg-green-500' } },
   { id: 'free_blue', name: 'Azul Celeste', category: 'profile_bg', rarity: Rarity.COMMON, price: 0, currency: 'coins', icon: '🔵', description: 'Céu limpo para colheita.', harvestBonus: 0, style: { bg: 'from-blue-800 to-blue-950', border: 'border-blue-500/30', text: 'text-blue-400', accent: 'bg-blue-500' } },
   { id: 'free_red', name: 'Fogo Sativa', category: 'profile_bg', rarity: Rarity.COMMON, price: 0, currency: 'coins', icon: '🔴', description: 'Paixão pelo plantio.', harvestBonus: 0, style: { bg: 'from-red-800 to-red-950', border: 'border-red-500/30', text: 'text-red-400', accent: 'bg-red-500' } },
   { id: 'free_gray', name: 'Concreto Urbano', category: 'profile_bg', rarity: Rarity.COMMON, price: 0, currency: 'coins', icon: '🔘', description: 'Foco no asfalto.', harvestBonus: 0, style: { bg: 'from-zinc-800 to-zinc-950', border: 'border-zinc-500/30', text: 'text-zinc-400', accent: 'bg-zinc-500' } },
 
-  // --- ITENS DE LUXO ---
-  { id: 'silk_24k', name: 'Seda de Ouro 24k', category: 'jewelry', rarity: Rarity.RARE, price: 5000, currency: 'coins', icon: '📜', description: 'Papel de enrolar banhado a ouro puro.', harvestBonus: 0.05 },
-  { id: 'diamond_grinder', name: 'Dichavador de Diamante', category: 'jewelry', rarity: Rarity.LEGENDARY, price: 2500, currency: 'hashCoins', icon: '⚙️', description: 'Corta até as strains mais densas.', harvestBonus: 0.10 },
-  { id: 'crystal_bong', name: 'Bong de Andrômeda', category: 'luxury', rarity: Rarity.MYTHIC, price: 8000, currency: 'hashCoins', icon: '🏺', description: 'Esculpido em cristal estelar.', harvestBonus: 0.20 },
-  { id: 'thc_ring', name: 'Anel do Tetrahidro', category: 'jewelry', rarity: Rarity.RARE, price: 3000, currency: 'coins', icon: '💍', description: 'Brilho verde no dedo.', harvestBonus: 0.03 },
-  { id: 'smoke_cape', name: 'Capa Nebulosa', category: 'cape', rarity: Rarity.LEGENDARY, price: 5000, currency: 'hashCoins', icon: '🧣', description: 'Deixa um rastro de resina estelar.', harvestBonus: 0.12 },
-  { id: 'emerald_pipe', name: 'Pipe de Esmeralda', category: 'jewelry', rarity: Rarity.RARE, price: 10000, currency: 'coins', icon: '💎', description: 'Elegância em cada tragada.', harvestBonus: 0.04 },
-  { id: 'golden_scale', name: 'Balança de Ouro', category: 'luxury', rarity: Rarity.LEGENDARY, price: 12000, currency: 'coins', icon: '⚖️', description: 'Precisão real.', harvestBonus: 0.06 },
-  { id: 'hash_scepter', name: 'Cetro do Mestre', category: 'luxury', rarity: Rarity.MYTHIC, price: 15000, currency: 'hashCoins', icon: '🪄', description: 'Poder total sobre o Hash.', harvestBonus: 0.25 },
-  { id: 'kush_crown', name: 'Coroa de Sativa', category: 'luxury', rarity: Rarity.LEGENDARY, price: 50000, currency: 'coins', icon: '👑', description: 'O rei do cultivo.', harvestBonus: 0.15 },
-  { id: 'terpene_essence', name: 'Essência de Terpeno', category: 'luxury', rarity: Rarity.RARE, price: 8000, currency: 'coins', icon: '🧪', description: 'Aroma que vicia.', harvestBonus: 0.05 },
-  { id: 'ganja_sandals', name: 'Havaianas de Cânhamo', category: 'luxury', rarity: Rarity.COMMON, price: 1000, currency: 'coins', icon: '🩴', description: 'Conforto natural.', harvestBonus: 0.01 },
-  { id: 'chronic_watch', name: 'Relógio 4:20', category: 'jewelry', rarity: Rarity.RARE, price: 4200, currency: 'coins', icon: '⌚', description: 'Sempre na hora certa.', harvestBonus: 0.03 },
-  { id: 'cbd_oil_vial', name: 'Frasco de CBD Puro', category: 'jewelry', rarity: Rarity.RARE, price: 5500, currency: 'coins', icon: '🧪', description: 'Calma concentrada.', harvestBonus: 0.04 },
-  { id: 'leafy_backpack', name: 'Mochila de Folhas', category: 'luxury', rarity: Rarity.COMMON, price: 2000, currency: 'coins', icon: '🎒', description: 'Leve seus buds com estilo.', harvestBonus: 0.02 },
-  { id: 'neon_shades', name: 'Óculos Neon 80s', category: 'jewelry', rarity: Rarity.RARE, price: 3500, currency: 'coins', icon: '🕶️', description: 'Visão psicodélica.', harvestBonus: 0.03 },
+  { id: 'silk_24k', name: 'Seda de Ouro 24k', category: 'jewelry', rarity: Rarity.RARE, price: 15000, currency: 'coins', icon: '📜', description: 'Papel de enrolar banhado a ouro puro.', harvestBonus: 0.05 },
+  { id: 'diamond_grinder', name: 'Dichavador de Diamante', category: 'jewelry', rarity: Rarity.LEGENDARY, price: 5000, currency: 'hashCoins', icon: '⚙️', description: 'Corta até as strains mais densas.', harvestBonus: 0.10 },
+  { id: 'crystal_bong', name: 'Bong de Andrômeda', category: 'luxury', rarity: Rarity.MYTHIC, price: 25000, currency: 'hashCoins', icon: '🏺', description: 'Esculpido em cristal estelar.', harvestBonus: 0.20 },
+  { id: 'thc_ring', name: 'Anel do Tetrahidro', category: 'jewelry', rarity: Rarity.RARE, price: 8000, currency: 'coins', icon: '💍', description: 'Brilho verde no dedo.', harvestBonus: 0.03 },
+  { id: 'smoke_cape', name: 'Capa Nebulosa', category: 'cape', rarity: Rarity.LEGENDARY, price: 12000, currency: 'hashCoins', icon: '🧣', description: 'Deixa um rastro de resina estelar.', harvestBonus: 0.12 },
+  { id: 'emerald_pipe', name: 'Pipe de Esmeralda', category: 'jewelry', rarity: Rarity.RARE, price: 25000, currency: 'coins', icon: '💎', description: 'Elegância em cada tragada.', harvestBonus: 0.04 },
+  { id: 'golden_scale', name: 'Balança de Ouro', category: 'luxury', rarity: Rarity.LEGENDARY, price: 45000, currency: 'coins', icon: '⚖️', description: 'Precisão real.', harvestBonus: 0.06 },
+  { id: 'hash_scepter', name: 'Cetro do Mestre', category: 'luxury', rarity: Rarity.MYTHIC, price: 40000, currency: 'hashCoins', icon: '🪄', description: 'Poder total sobre o Hash.', harvestBonus: 0.25 },
+  { id: 'kush_crown', name: 'Coroa de Sativa', category: 'luxury', rarity: Rarity.LEGENDARY, price: 150000, currency: 'coins', icon: '👑', description: 'O rei do cultivo.', harvestBonus: 0.15 },
+  { id: 'terpene_essence', name: 'Essência de Terpeno', category: 'luxury', rarity: Rarity.RARE, price: 18000, currency: 'coins', icon: '🧪', description: 'Aroma que vicia.', harvestBonus: 0.05 },
+  { id: 'ganja_sandals', name: 'Havaianas de Cânhamo', category: 'luxury', rarity: Rarity.COMMON, price: 2500, currency: 'coins', icon: '🩴', description: 'Conforto natural.', harvestBonus: 0.01 },
+  { id: 'chronic_watch', name: 'Relógio 4:20', category: 'jewelry', rarity: Rarity.RARE, price: 12000, currency: 'coins', icon: '⌚', description: 'Sempre na hora certa.', harvestBonus: 0.03 },
+  { id: 'cbd_oil_vial', name: 'Frasco de CBD Puro', category: 'jewelry', rarity: Rarity.RARE, price: 14500, currency: 'coins', icon: '🧪', description: 'Calma concentrada.', harvestBonus: 0.04 },
+  { id: 'leafy_backpack', name: 'Mochila de Folhas', category: 'luxury', rarity: Rarity.COMMON, price: 5000, currency: 'coins', icon: '🎒', description: 'Leve seus buds com estilo.', harvestBonus: 0.02 },
+  { id: 'neon_shades', name: 'Óculos Neon 80s', category: 'jewelry', rarity: Rarity.RARE, price: 9500, currency: 'coins', icon: '🕶️', description: 'Visão psicodélica.', harvestBonus: 0.03 },
 
-  // --- TEMAS DE HUD ---
-  { id: 'theme_purple_haze', name: 'Tema Purple Haze', category: 'hud_theme', rarity: Rarity.RARE, price: 3000, currency: 'coins', icon: '🟣', description: 'Interface roxa vibrante.', harvestBonus: 0.02, style: { bg: 'bg-purple-900/80', border: 'border-purple-400', text: 'text-purple-300', accent: 'bg-purple-500' } },
-  { id: 'theme_lemon_skunk', name: 'Tema Lemon Skunk', category: 'hud_theme', rarity: Rarity.RARE, price: 3000, currency: 'coins', icon: '🟡', description: 'Cítrico e brilhante.', harvestBonus: 0.02, style: { bg: 'bg-yellow-900/80', border: 'border-yellow-400', text: 'text-yellow-300', accent: 'bg-yellow-500' } },
-  { id: 'theme_sour_diesel', name: 'Tema Sour Diesel', category: 'hud_theme', rarity: Rarity.RARE, price: 3000, currency: 'coins', icon: '🟢', description: 'Verde industrial.', harvestBonus: 0.02, style: { bg: 'bg-emerald-900/80', border: 'border-emerald-400', text: 'text-emerald-300', accent: 'bg-emerald-500' } },
-  { id: 'theme_blue_dream', name: 'Tema Blue Dream', category: 'hud_theme', rarity: Rarity.RARE, price: 3500, currency: 'coins', icon: '🔵', description: 'Calmaria azulada.', harvestBonus: 0.02, style: { bg: 'bg-blue-900/80', border: 'border-blue-400', text: 'text-blue-300', accent: 'bg-blue-500' } },
-  { id: 'theme_galactic_gold', name: 'Tema Ouro Estelar', category: 'hud_theme', rarity: Rarity.LEGENDARY, price: 1500, currency: 'hashCoins', icon: '✨', description: 'Luxo espacial.', harvestBonus: 0.08, style: { bg: 'bg-amber-900/90', border: 'border-yellow-500', text: 'text-yellow-200', accent: 'bg-yellow-600' } },
-  { id: 'theme_black_widow', name: 'Tema Black Widow', category: 'hud_theme', rarity: Rarity.MYTHIC, price: 5000, currency: 'hashCoins', icon: '🖤', description: 'Elegância fatal.', harvestBonus: 0.15, style: { bg: 'bg-black/90', border: 'border-red-600', text: 'text-red-500', accent: 'bg-red-800' } },
+  { id: 'theme_purple_haze', name: 'Tema Purple Haze', category: 'hud_theme', rarity: Rarity.RARE, price: 15000, currency: 'coins', icon: '🟣', description: 'Interface roxa vibrante.', harvestBonus: 0.02, style: { bg: 'bg-purple-900/80', border: 'border-purple-400', text: 'text-purple-300', accent: 'bg-purple-500' } },
+  { id: 'theme_lemon_skunk', name: 'Tema Lemon Skunk', category: 'hud_theme', rarity: Rarity.RARE, price: 15000, currency: 'coins', icon: '🟡', description: 'Cítrico e brilhante.', harvestBonus: 0.02, style: { bg: 'bg-yellow-900/80', border: 'border-yellow-400', text: 'text-yellow-300', accent: 'bg-yellow-500' } },
+  { id: 'theme_sour_diesel', name: 'Tema Sour Diesel', category: 'hud_theme', rarity: Rarity.RARE, price: 15000, currency: 'coins', icon: '🟢', description: 'Verde industrial.', harvestBonus: 0.02, style: { bg: 'bg-emerald-900/80', border: 'border-emerald-400', text: 'text-emerald-300', accent: 'bg-emerald-500' } },
+  { id: 'theme_blue_dream', name: 'Tema Blue Dream', category: 'hud_theme', rarity: Rarity.RARE, price: 18000, currency: 'coins', icon: '🔵', description: 'Calmaria azulada.', harvestBonus: 0.02, style: { bg: 'bg-blue-900/80', border: 'border-blue-400', text: 'text-blue-300', accent: 'bg-blue-500' } },
+  { id: 'theme_galactic_gold', name: 'Tema Ouro Estelar', category: 'hud_theme', rarity: Rarity.LEGENDARY, price: 5000, currency: 'hashCoins', icon: '✨', description: 'Luxo espacial.', harvestBonus: 0.08, style: { bg: 'bg-amber-900/90', border: 'border-yellow-500', text: 'text-yellow-200', accent: 'bg-yellow-600' } },
+  { id: 'theme_black_widow', name: 'Tema Black Widow', category: 'hud_theme', rarity: Rarity.MYTHIC, price: 15000, currency: 'hashCoins', icon: '🖤', description: 'Elegância fatal.', harvestBonus: 0.15, style: { bg: 'bg-black/90', border: 'border-red-600', text: 'text-red-500', accent: 'bg-red-800' } },
 
-  // --- FUNDOS DE PERFIL ---
-  { id: 'bg_nebula', name: 'Nebulosa Sativa', category: 'profile_bg', rarity: Rarity.LEGENDARY, price: 1000, currency: 'hashCoins', icon: '🖼️', description: 'O cosmos em forma de folha.', harvestBonus: 0.05, style: { bg: 'from-green-900 via-purple-900 to-black', border: 'border-green-400', text: 'text-green-300', accent: 'bg-green-600' } },
-  { id: 'bg_jungle', name: 'Selva Profunda', category: 'profile_bg', rarity: Rarity.RARE, price: 8000, currency: 'coins', icon: '🌴', description: 'Densidade tropical.', harvestBonus: 0.03, style: { bg: 'from-emerald-900 to-teal-950', border: 'border-emerald-500', text: 'text-emerald-200', accent: 'bg-emerald-600' } },
-  { id: 'bg_sunset', name: 'Pôr do Sol Indica', category: 'profile_bg', rarity: Rarity.RARE, price: 7000, currency: 'coins', icon: '🌇', description: 'Cores quentes e relaxantes.', harvestBonus: 0.03, style: { bg: 'from-orange-800 to-red-950', border: 'border-orange-500', text: 'text-orange-200', accent: 'bg-orange-600' } },
-  { id: 'bg_cyber_lab', name: 'Laboratório Cyber', category: 'profile_bg', rarity: Rarity.LEGENDARY, price: 12000, currency: 'coins', icon: '🤖', description: 'Extração futurista.', harvestBonus: 0.06, style: { bg: 'bg-slate-900', border: 'border-cyan-500', text: 'text-cyan-400', accent: 'bg-cyan-600' } },
-  { id: 'bg_zen_garden', name: 'Jardim Zen', category: 'profile_bg', rarity: Rarity.COMMON, price: 2000, currency: 'coins', icon: '⛩️', description: 'Paz no cultivo.', harvestBonus: 0.01, style: { bg: 'from-slate-700 to-slate-900', border: 'border-slate-500', text: 'text-slate-300', accent: 'bg-slate-600' } },
+  { id: 'bg_nebula', name: 'Nebulosa Sativa', category: 'profile_bg', rarity: Rarity.LEGENDARY, price: 3500, currency: 'hashCoins', icon: '🖼️', description: 'O cosmos em forma de folha.', harvestBonus: 0.05, style: { bg: 'from-green-900 via-purple-900 to-black', border: 'border-green-400', text: 'text-green-300', accent: 'bg-green-600' } },
+  { id: 'bg_jungle', name: 'Selva Profunda', category: 'profile_bg', rarity: Rarity.RARE, price: 25000, currency: 'coins', icon: '🌴', description: 'Densidade tropical.', harvestBonus: 0.03, style: { bg: 'from-emerald-900 to-teal-950', border: 'border-emerald-500', text: 'text-emerald-200', accent: 'bg-emerald-600' } },
+  { id: 'bg_sunset', name: 'Pôr do Sol Indica', category: 'profile_bg', rarity: Rarity.RARE, price: 22000, currency: 'coins', icon: '🌇', description: 'Cores quentes e relaxantes.', harvestBonus: 0.03, style: { bg: 'from-orange-800 to-red-950', border: 'border-orange-500', text: 'text-orange-200', accent: 'bg-orange-600' } },
+  { id: 'bg_cyber_lab', name: 'Laboratório Cyber', category: 'profile_bg', rarity: Rarity.LEGENDARY, price: 45000, currency: 'coins', icon: '🤖', description: 'Extração futurista.', harvestBonus: 0.06, style: { bg: 'bg-slate-900', border: 'border-cyan-500', text: 'text-cyan-400', accent: 'bg-cyan-600' } },
+  { id: 'bg_zen_garden', name: 'Jardim Zen', category: 'profile_bg', rarity: Rarity.COMMON, price: 10000, currency: 'coins', icon: '⛩️', description: 'Paz no cultivo.', harvestBonus: 0.01, style: { bg: 'from-slate-700 to-slate-900', border: 'border-slate-500', text: 'text-slate-300', accent: 'bg-slate-600' } },
 ];

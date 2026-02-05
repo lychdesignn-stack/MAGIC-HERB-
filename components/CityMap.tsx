@@ -18,7 +18,6 @@ const CityMap: React.FC<CityMapProps> = ({ player, onSale, onBack, offers }) => 
   const [busted, setBusted] = useState(false);
   const [fineAmount, setFineAmount] = useState(0);
 
-  // NPCs CRÍTICOS: @Cellin, ICKY767, CPXINSANE, IGOWEED, Dancrema
   const ELITE_NPC_IDS = ['n1', 'n2', 'n3', 'n4', 'n6'];
   const ELITE_REQ_VAL = 100;
 
@@ -41,7 +40,6 @@ const CityMap: React.FC<CityMapProps> = ({ player, onSale, onBack, offers }) => 
   };
 
   const checkTerritoryLock = (territoryId: string) => {
-    // A Favela High-Tech exige a reputação elite
     if (territoryId === 'favela_hightech') {
       return checkEliteAccess();
     }
@@ -64,11 +62,11 @@ const CityMap: React.FC<CityMapProps> = ({ player, onSale, onBack, offers }) => 
       const seedId = sellingItem.replace('_bud', '').replace('_hash', '');
       const seed = SEEDS.find(s => s.id === seedId)!;
       
-      const baseValue = sellingItem.endsWith('_hash') ? seed.baseValue * 5.5 : seed.baseValue * 1.5;
+      // Multiplicadores do mapa nerfados para progressão mais lenta
+      const baseValue = sellingItem.endsWith('_hash') ? seed.baseValue * 4.1 : seed.baseValue * 1.15;
       const finalPrice = Math.floor(baseValue * amount * selectedTerritory.priceBonus);
 
       if (wasBusted) {
-          // Multa visual de 15% do saldo total
           const fine = Math.floor(player.coins * 0.15);
           setFineAmount(fine);
           setBusted(true);
