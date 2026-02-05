@@ -2,7 +2,8 @@
 export enum Rarity {
   COMMON = 'Common',
   RARE = 'Rare',
-  LEGENDARY = 'Legendary'
+  LEGENDARY = 'Legendary',
+  MYTHIC = 'Mythic'
 }
 
 export type RiskLevel = 'low' | 'medium' | 'high';
@@ -11,8 +12,8 @@ export interface Territory {
   id: string;
   name: string;
   riskLevel: RiskLevel;
-  riskChance: number; // 0 a 1
-  priceMultiplier: number;
+  riskChance: number;
+  priceBonus: number;
   description: string;
   color: string;
   icon: string;
@@ -22,7 +23,7 @@ export interface Title {
   id: string;
   name: string;
   requirement: string;
-  price?: number; // em HashCoins
+  price?: number;
   type: 'reputation' | 'purchasable';
 }
 
@@ -32,11 +33,22 @@ export interface Seed {
   rarity: Rarity;
   growthTime: number; 
   baseValue: number;
+  info: string;
   color: string;
   secondaryColor?: string;
   gradientColors?: string[];
   glowColor: string;
   hashCoinPrice?: number;
+}
+
+export interface ConsumableItem {
+  id: string;
+  name: string;
+  price: number;
+  currency: 'coins' | 'hashCoins';
+  description: string;
+  icon: string;
+  effect: 'fertilize' | 'speed_up' | 'water_all';
 }
 
 export interface Offer {
@@ -57,7 +69,7 @@ export interface LuxuryItem {
   currency: 'coins' | 'hashCoins';
   icon: string;
   description: string;
-  harvestBonus?: number; // Ex: 0.1 para 10%
+  harvestBonus?: number;
   style?: {
     bg: string;
     border: string;
@@ -67,11 +79,17 @@ export interface LuxuryItem {
 }
 
 export interface Player {
+  name: string;
   gender: 'male' | 'female';
   avatarId: string;
   coins: number;
   hashCoins: number;
   level: number;
+  stats: {
+    totalPlanted: number;
+    totalSold: number;
+    totalEarned: number;
+  };
   inventory: Record<string, number>;
   reputation: Record<string, number>;
   unlockedRarities: Rarity[]; 

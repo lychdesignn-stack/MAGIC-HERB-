@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Plot, Seed, Rarity, Player } from '../types';
-import { SEEDS, UPGRADE_COSTS, UPGRADE_LIMITS } from '../constants';
+import { SEEDS } from '../constants';
 
 interface PlotProps {
   plot: Plot;
@@ -52,7 +52,15 @@ const OrganicNugget = ({ progress, color, x, y, scale, glowColor, gradientId, ra
 
   return (
     <g transform={`translate(${x}, ${y}) scale(${scale * nuggetGrowth})`}>
-      {/* Aura de Raridade Vibrante */}
+      {rarity === Rarity.MYTHIC && (
+        <g>
+          <circle r="50" fill={glowColor} fillOpacity="0.5" filter="blur(24px)" className="animate-pulse" />
+          <circle r="44" fill="none" stroke={glowColor} strokeWidth="3" strokeDasharray="15 8" className="animate-[spin_3s_linear_infinite]" />
+          <circle r="38" fill="none" stroke="#bef264" strokeWidth="1" strokeDasharray="5 5" className="animate-[spin_6s_linear_infinite_reverse]" />
+          <circle cx="20" cy="-20" r="1.5" fill="white" className="animate-ping" style={{ animationDuration: '2s' }} />
+          <circle cx="-25" cy="-10" r="1" fill="#bef264" className="animate-ping" style={{ animationDuration: '3s' }} />
+        </g>
+      )}
       {rarity === Rarity.LEGENDARY && (
         <g>
           <circle r="42" fill={glowColor} fillOpacity="0.4" filter="blur(18px)" className="animate-pulse" />
@@ -86,38 +94,69 @@ const Soil = () => (
       stroke="#2d1e12" 
       strokeWidth="1"
     />
-    <circle cx="-14" cy="-5" r="2" fill="#2d1e12" opacity="0.6" />
-    <circle cx="10" cy="-6" r="1.5" fill="#2d1e12" opacity="0.6" />
-    <path d="M-8,-7 Q0,-9 8,-7" fill="none" stroke="#2d1e12" strokeWidth="0.8" opacity="0.4" />
   </g>
 );
 
 const GrowLightEffect = ({ type, progress }: { type: Rarity, progress: number }) => {
-  const intensity = 0.15 + (progress / 100) * 0.75;
+  const normProgress = Math.max(0, Math.min(1, progress / 100));
+  const intensity = normProgress * (type === Rarity.MYTHIC ? 0.7 : type === Rarity.LEGENDARY ? 0.5 : 0.4);
+  
   const colors = {
-    [Rarity.COMMON]: { light: '#ffffff', beam: 'rgba(255,255,255,0.1)' },
-    [Rarity.RARE]: { light: '#e9d5ff', beam: 'rgba(192,132,252,0.25)' },
-    [Rarity.LEGENDARY]: { light: '#fef08a', beam: 'rgba(250,204,21,0.4)' },
+    [Rarity.COMMON]: { beam: 'rgba(255,255,255,', bulb: 'bg-white' },
+    [Rarity.RARE]: { beam: 'rgba(168,85,247,', bulb: 'bg-purple-400' },
+    [Rarity.LEGENDARY]: { beam: 'rgba(234,179,8,', bulb: 'bg-yellow-400' },
+    [Rarity.MYTHIC]: { beam: 'rgba(34,197,94,', bulb: 'bg-green-400' },
   };
-  const color = colors[type];
+  const theme = colors[type];
 
   return (
-    <div className="absolute top-0 inset-x-0 h-full pointer-events-none z-10 overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-2.5 bg-zinc-800 rounded-b-full border-x border-b border-white/20 shadow-2xl" />
+    <div className="absolute inset-0 pointer-events-none z-10 flex flex-col items-center">
+      {/* Container da Lâmpada perfeitamente centralizado */}
+      <div className="w-16 h-1 flex flex-col items-center relative">
+        {/* Lâmpada (Estrutura) */}
+        <div className={`w-14 h-1.5 bg-zinc-800 rounded-b-md border-x border-b border-white/10 ${type === Rarity.MYTHIC ? 'border-green-500/20' : ''}`} />
+        
+        {/* Bulbo Brilhante */}
+        <div 
+          className={`absolute top-0.5 w-7 h-1 rounded-full blur-[1px] transition-all duration-700 ${theme.bulb}`}
+          style={{ 
+            opacity: 0.1 + normProgress * 0.9,
+            boxShadow: `0 0 ${4 + normProgress * 15}px ${theme.beam}${0.6 + normProgress * 0.4})`
+          }}
+        />
+      </div>
+      
+      {/* Feixe de Luz - Centralizado e com escala corrigida */}
       <div 
-        className="absolute top-2 left-1/2 -translate-x-1/2 w-56 h-full transition-opacity duration-1000"
+        className={`w-full h-full transition-all duration-1000 ease-out origin-top ${progress >= 100 ? 'animate-pulse' : ''}`}
         style={{ 
-          background: `linear-gradient(to bottom, ${color.beam}, transparent)`,
-          clipPath: 'polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%)',
-          opacity: intensity
+          background: `radial-gradient(circle at top, ${theme.beam}${intensity}), transparent 75%)`,
+          clipPath: 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)',
+          opacity: intensity,
+          transform: `scaleY(${0.5 + normProgress * 0.5})`
         }}
       />
     </div>
   );
 };
 
+const ActionCircle = ({ icon, onClick, active, pulse }: { icon: string, onClick: () => void, active: boolean, pulse?: boolean }) => {
+  if (!active) return null;
+  return (
+    <button 
+      onClick={(e) => { e.stopPropagation(); onClick(); }}
+      className={`w-10 h-10 rounded-full bg-black/40 backdrop-blur-xl border border-white/20 shadow-2xl flex items-center justify-center text-lg transition-all active:scale-90 hover:bg-black/60 group
+        ${pulse ? 'animate-pulse ring-1 ring-white/20' : ''}
+      `}
+    >
+      <span className="drop-shadow-md group-hover:scale-110 transition-transform">{icon}</span>
+    </button>
+  );
+};
+
 const PlotComponent: React.FC<PlotProps> = ({ plot, selectedSeedId, onPlant, onWater, onPrune, onHarvest }) => {
   const [progress, setProgress] = useState(0);
+  const [showInfo, setShowInfo] = useState(false);
   const seed = plot.seedId ? SEEDS.find(s => s.id === plot.seedId) : null;
 
   useEffect(() => {
@@ -131,36 +170,28 @@ const PlotComponent: React.FC<PlotProps> = ({ plot, selectedSeedId, onPlant, onW
         }
       }, 500);
       return () => clearInterval(interval);
-    } else if (!plot.seedId) setProgress(0);
+    } else if (!plot.seedId) {
+      setProgress(0);
+    }
   }, [plot.seedId, plot.plantedAt, plot.isWatered]);
 
   const isReadyForPruning = progress >= 100;
-
-  const getRarityStyle = () => {
-    switch(plot.type) {
-      case Rarity.COMMON: return 'border-white/10 bg-zinc-950';
-      case Rarity.RARE: return 'border-purple-500/30 bg-zinc-950 shadow-[inset_0_0_25px_rgba(168,85,247,0.1)]';
-      case Rarity.LEGENDARY: return 'border-yellow-500/40 bg-zinc-950 shadow-[inset_0_0_45px_rgba(234,179,8,0.2)]';
-    }
-  };
-
-  const hasGradient = seed && (seed.rarity === Rarity.RARE || seed.rarity === Rarity.LEGENDARY);
+  const hasGradient = seed && (seed.rarity === Rarity.RARE || seed.rarity === Rarity.LEGENDARY || seed.rarity === Rarity.MYTHIC);
   const gradientId = hasGradient ? `grad-${seed!.id}-${plot.id}` : undefined;
-  const maxGrowthHeight = 40;
+  const maxGrowthHeight = 42;
 
   return (
-    <div className={`relative w-full aspect-square rounded-[3rem] overflow-hidden border-2 ${getRarityStyle()} transition-all duration-500 active:scale-95 group`}>
-      {/* Badge de Capacidade Minimalista */}
-      <div className="absolute top-4 right-4 z-50">
-        <div className="bg-white/10 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/5 flex items-center gap-1">
-          <span className="text-[10px] font-black text-white/40 tracking-tighter">CAP</span>
-          <span className="text-[10px] font-bold text-white/80">{plot.capacity}</span>
-        </div>
-      </div>
+    <div className={`relative w-full aspect-square rounded-[2.5rem] overflow-hidden border transition-all duration-500 group
+      ${plot.type === Rarity.COMMON ? 'bg-zinc-950 border-white/5' : 
+        plot.type === Rarity.RARE ? 'bg-purple-950/10 border-purple-500/10' : 
+        plot.type === Rarity.LEGENDARY ? 'bg-yellow-950/10 border-yellow-500/10' :
+        'bg-green-950/20 border-green-500/30 shadow-[0_0_20px_rgba(34,197,94,0.15)] ring-1 ring-green-500/10'}
+    `}>
+      {/* Grow Light - Fixado alinhamento */}
+      {plot.seedId && plot.isWatered && <GrowLightEffect type={plot.type} progress={progress} />}
 
-      {plot.seedId && <GrowLightEffect type={plot.type} progress={progress} />}
-
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+      {/* Plant SVG */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <svg width="100%" height="100%" viewBox="0 0 100 100" className="overflow-visible">
           <defs>
             {hasGradient && (
@@ -178,80 +209,91 @@ const PlotComponent: React.FC<PlotProps> = ({ plot, selectedSeedId, onPlant, onW
               </linearGradient>
             )}
           </defs>
-
+          
           {seed && <Soil />}
-
+          
           {seed && (
-            <g transform={`scale(${0.9 + (plot.capacity * 0.04)}) translate(${(100 - 100*(0.9 + plot.capacity*0.04))/2}, 0)`}>
+            <g transform={`translate(50, 92) scale(${0.8 + plot.capacity * 0.05}) translate(-50, -92)`}>
               <path 
                 d={`M50,92 Q${50 + Math.sin(progress/10)*2},${92 - (progress/100)*(maxGrowthHeight/2)} 50,${92 - (progress/100)*maxGrowthHeight}`} 
                 fill="none" 
-                stroke="#166534" 
-                strokeWidth={2 + (progress/100) * 2} 
+                stroke={seed.rarity === Rarity.MYTHIC ? '#22c55e' : '#166534'} 
+                strokeWidth={2 + (progress/100) * 1.5} 
                 strokeLinecap="round" 
               />
-              
-              <OrganicLeaf progress={progress/100} size={0.55} color={seed.color} x={50} y={92 - (progress/100)*(maxGrowthHeight * 0.3)} rotation={-45} isPruned={plot.isPruned} gradientId={gradientId} />
-              <OrganicLeaf progress={progress/100} size={0.65} color={seed.color} x={50} y={92 - (progress/100)*(maxGrowthHeight * 0.6)} rotation={45} isPruned={plot.isPruned} gradientId={gradientId} />
-              <OrganicLeaf progress={progress/100} size={0.75} color={seed.color} x={50} y={92 - (progress/100)*(maxGrowthHeight * 0.85)} rotation={-30} isPruned={plot.isPruned} gradientId={gradientId} />
-              
-              <OrganicNugget 
-                progress={progress/100} 
-                color={seed.color} 
-                x={50} 
-                y={92 - (progress/100)*maxGrowthHeight} 
-                scale={0.8 + (progress/100)*0.5} 
-                glowColor={seed.glowColor} 
-                gradientId={gradientId}
-                rarity={seed.rarity}
-              />
+              <OrganicLeaf progress={progress/100} size={0.4} color={seed.color} x={50} y={92 - (progress/100)*(maxGrowthHeight * 0.3)} rotation={-45} isPruned={plot.isPruned} gradientId={gradientId} />
+              <OrganicLeaf progress={progress/100} size={0.5} color={seed.color} x={50} y={92 - (progress/100)*(maxGrowthHeight * 0.6)} rotation={45} isPruned={plot.isPruned} gradientId={gradientId} />
+              <OrganicLeaf progress={progress/100} size={0.6} color={seed.color} x={50} y={92 - (progress/100)*(maxGrowthHeight * 0.85)} rotation={-30} isPruned={plot.isPruned} gradientId={gradientId} />
+              <OrganicNugget progress={progress/100} color={seed.color} x={50} y={92 - (progress/100)*maxGrowthHeight} scale={0.7 + (progress/100)*0.4} glowColor={seed.glowColor} gradientId={gradientId} rarity={seed.rarity} />
             </g>
           )}
         </svg>
       </div>
 
-      <div className="absolute bottom-[6%] left-1/2 -translate-x-1/2 w-32 h-6 bg-black/60 rounded-[100%] blur-md pointer-events-none" />
+      {/* Interação & Info */}
+      <div className="absolute inset-0 z-20">
+        <div className={`absolute top-4 left-4 text-[6px] font-black uppercase tracking-[0.3em] ${plot.type === Rarity.MYTHIC ? 'text-green-400' : 'text-white/10'}`}>{plot.type}</div>
 
-      {/* Botões de Ação Modernos e Minimalistas */}
-      <button 
-        onClick={() => {
-          if (!plot.seedId) onPlant();
-          else if (!plot.isWatered) onWater();
-          else if (isReadyForPruning && !plot.isPruned) onPrune();
-          else if (plot.isPruned) onHarvest();
-        }}
-        className="absolute inset-0 z-40 flex items-center justify-center bg-transparent group"
-      >
-        {!plot.seedId && selectedSeedId && SEEDS.find(s => s.id === selectedSeedId)?.rarity === plot.type && (
-          <div className="bg-white/10 backdrop-blur-md px-6 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/20 shadow-xl text-white/80 group-hover:bg-white/20 transition-all">
-            CULTIVAR
-          </div>
+        {plot.seedId && (
+          <button 
+            onClick={(e) => { e.stopPropagation(); setShowInfo(!showInfo); }}
+            className={`absolute top-4 right-4 w-5 h-5 rounded-full flex items-center justify-center text-[8px] border transition-all
+              ${showInfo ? 'bg-white text-black border-white' : 'bg-white/5 text-white/20 border-white/10 hover:border-white/30'}
+            `}
+          >
+            ?
+          </button>
         )}
-        
-        {plot.seedId && !plot.isWatered && (
-          <div className="flex flex-col items-center gap-2">
-            <div className="text-5xl animate-bounce drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]">💧</div>
-            <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Regar</span>
+
+        {showInfo && seed && (
+          <div className="absolute top-11 right-4 left-4 bg-black/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-3 animate-in fade-in zoom-in duration-200 shadow-2xl z-50">
+            <h4 className="text-[10px] font-black text-white uppercase mb-1 tracking-wider">{seed.name}</h4>
+            <p className="text-[8px] text-zinc-500 leading-tight">{seed.info}</p>
           </div>
         )}
 
-        {isReadyForPruning && !plot.isPruned && (
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-14 h-14 bg-white/10 backdrop-blur-lg rounded-full flex items-center justify-center text-3xl border border-white/20 shadow-2xl animate-pulse">✂️</div>
-            <span className="text-[9px] font-black text-pink-400 uppercase tracking-widest">Podar</span>
+        {!plot.seedId && (
+          <div className="w-full h-full flex items-center justify-center">
+            {selectedSeedId && SEEDS.find(s => s.id === selectedSeedId)?.rarity === plot.type ? (
+              <button onClick={onPlant} className={`w-14 h-14 rounded-full border border-dashed transition-all flex items-center justify-center group/plant ${plot.type === Rarity.MYTHIC ? 'border-green-500/40 bg-green-500/5' : 'border-white/10 hover:border-white/30 hover:bg-white/5'}`}>
+                <span className={`text-xl opacity-20 group-hover/plant:opacity-100 group-hover/plant:scale-110 transition-all ${plot.type === Rarity.MYTHIC ? 'opacity-40 text-green-400' : ''}`}>🌱</span>
+              </button>
+            ) : (
+              <span className={`text-[7px] font-black uppercase tracking-[0.5em] rotate-90 ${plot.type === Rarity.MYTHIC ? 'text-green-500/20' : 'text-white/5'}`}>VAZIO</span>
+            )}
           </div>
         )}
 
-        {plot.isPruned && (
-          <div className="flex flex-col items-center gap-2 px-6 py-4 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.5)] active:scale-90 transition-all">
-            <div className="text-4xl animate-bounce">📦</div>
-            <div className="flex flex-col items-center">
-               <span className="text-[11px] font-black text-white uppercase tracking-widest">Colher</span>
-               <span className="text-[8px] font-bold text-white/40">+{plot.capacity} unidades</span>
+        <div className="absolute bottom-4 right-4 flex flex-col gap-2.5 items-center">
+          <ActionCircle 
+            icon="💧" 
+            onClick={onWater} 
+            active={!!plot.seedId && !plot.isWatered} 
+          />
+          
+          <ActionCircle 
+            icon="✂️" 
+            onClick={onPrune} 
+            active={!!plot.seedId && plot.isWatered && !plot.isPruned && isReadyForPruning} 
+          />
+
+          <ActionCircle 
+            icon="📦" 
+            onClick={onHarvest} 
+            active={plot.isPruned} 
+            pulse={true}
+          />
+
+          {plot.seedId && plot.isWatered && !isReadyForPruning && (
+            <div className={`w-1.5 h-10 bg-white/5 rounded-full overflow-hidden border border-white/5 mt-1 ${plot.type === Rarity.MYTHIC ? 'border-green-500/30' : ''}`}>
+              <div 
+                className={`w-full transition-all duration-500 shadow-[0_0_8px_rgba(99,102,241,0.5)] ${plot.type === Rarity.MYTHIC ? 'bg-green-400 shadow-[0_0_12px_rgba(34,197,94,0.8)]' : 'bg-indigo-500'}`} 
+                style={{ height: `${progress}%`, marginTop: 'auto' }} 
+              />
             </div>
-          </div>
-        )}
-      </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

@@ -19,6 +19,7 @@ const FarmGrid: React.FC<FarmGridProps> = ({ plots, onPlant, onWater, onPrune, o
   const [activeSeedId, setActiveSeedId] = useState<string | null>(null);
 
   const availableSeeds = SEEDS.filter(s => (inventory[s.id] || 0) > 0);
+  const activeSeed = activeSeedId ? SEEDS.find(s => s.id === activeSeedId) : null;
 
   useEffect(() => {
     if (activeSeedId && (inventory[activeSeedId] || 0) <= 0) {
@@ -38,8 +39,8 @@ const FarmGrid: React.FC<FarmGridProps> = ({ plots, onPlant, onWater, onPrune, o
   };
 
   return (
-    <div className="flex flex-col items-center w-full max-w-2xl mx-auto relative pb-20">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full px-2 mb-24">
+    <div className="flex flex-col items-center w-full max-w-4xl mx-auto relative pb-10">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full px-2 mb-20">
         {plots.map(plot => (
           <PlotComponent 
             key={plot.id} 
@@ -56,7 +57,23 @@ const FarmGrid: React.FC<FarmGridProps> = ({ plots, onPlant, onWater, onPrune, o
       </div>
 
       {/* Semente Selecionada / HUD de Seleção Otimizado */}
-      <div className="fixed bottom-24 inset-x-0 z-[150] px-4 flex justify-center pointer-events-none">
+      <div className="fixed bottom-24 inset-x-0 z-[150] px-4 flex flex-col items-center pointer-events-none">
+        
+        {/* Rótulo Ultra-Minimalista */}
+        {activeSeed && (
+          <div className="mb-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <div className="flex items-center gap-3">
+              <div 
+                className="w-[1px] h-4 bg-white/20 transition-colors"
+                style={{ backgroundColor: activeSeed.color }}
+              />
+              <span className="text-[10px] font-light uppercase tracking-[0.5em] text-white/80">
+                {activeSeed.name}
+              </span>
+            </div>
+          </div>
+        )}
+
         <div className="bg-black/80 backdrop-blur-3xl border border-white/20 rounded-3xl p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] flex items-center gap-2 pointer-events-auto max-w-full overflow-hidden">
           {availableSeeds.length > 0 ? (
             <div className="flex gap-2 overflow-x-auto no-scrollbar px-1 py-1 max-w-[80vw]">
