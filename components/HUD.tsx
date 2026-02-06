@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Player } from '../types';
 import { LUXURY_ITEMS } from '../constants';
 import CharacterAvatar from './CharacterAvatar';
@@ -14,6 +14,7 @@ interface HUDProps {
     extraBuds: number;
     growthSpeedMultiplier: number;
   };
+  onActivateCode: (code: string) => string;
 }
 
 const HUD: React.FC<HUDProps> = ({ 
@@ -22,8 +23,13 @@ const HUD: React.FC<HUDProps> = ({
   onOpenProfile, 
   onOpenMap, 
   totalBonus = 0, 
-  passiveBonuses = { extraBuds: 0, growthSpeedMultiplier: 1 } 
+  passiveBonuses = { extraBuds: 0, growthSpeedMultiplier: 1 },
+  onActivateCode
 }) => {
+  const [showCodeInput, setShowCodeInput] = useState(false);
+  const [code, setCode] = useState('');
+  const [codeResult, setCodeResult] = useState<string | null>(null);
+
   const activeThemeId = player.activeCosmetics.hud_theme;
   const activeTheme = LUXURY_ITEMS.find(i => i.id === activeThemeId);
   
@@ -41,8 +47,44 @@ const HUD: React.FC<HUDProps> = ({
     LUXURY_ITEMS.find(i => i.id === player.activeCosmetics.luxury)
   ].filter(Boolean);
 
+  const handleCodeSubmit = () => {
+    const result = onActivateCode(code);
+    setCodeResult(result);
+    setCode('');
+    setTimeout(() => {
+      setCodeResult(null);
+      setShowCodeInput(false);
+    }, 2000);
+  };
+
   return (
     <div className={`w-full ${themeStyles.bg} backdrop-blur-xl border-b ${themeStyles.border} p-3 flex flex-col gap-2 z-50 transition-all duration-700 ${themeStyles.effectClass || ''}`}>
+      {/* Sistema de Códigos Overlay */}
+      {showCodeInput && (
+        <div className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center p-6 backdrop-blur-md">
+           <div className="bg-zinc-900 border border-white/10 w-full max-w-sm rounded-[2rem] p-6 shadow-2xl flex flex-col gap-4 animate-in zoom-in duration-300">
+              <h3 className="font-cartoon text-lg text-center">Configurações Estelares</h3>
+              {codeResult ? (
+                <p className="text-center font-black text-indigo-400 text-xs uppercase py-4">{codeResult}</p>
+              ) : (
+                <>
+                  <input 
+                    type="text" 
+                    placeholder="Inserir Código..." 
+                    className="bg-black/50 border border-white/10 rounded-xl px-4 py-3 outline-none text-white text-center font-bold"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                  />
+                  <div className="flex gap-2">
+                    <button onClick={() => setShowCodeInput(false)} className="flex-1 py-3 rounded-xl bg-white/5 border border-white/5 font-black text-[10px] uppercase">Cancelar</button>
+                    <button onClick={handleCodeSubmit} className="flex-1 py-3 rounded-xl bg-indigo-600 font-black text-[10px] uppercase">Ativar</button>
+                  </div>
+                </>
+              )}
+           </div>
+        </div>
+      )}
+
       {/* Linha Principal: Perfil e Recursos */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-0.5 flex-1 max-w-[70%]">
@@ -56,18 +98,15 @@ const HUD: React.FC<HUDProps> = ({
               </div>
             </div>
             <div className="flex flex-col gap-1 flex-1 ml-2">
-              {/* Barra de Nível / XP */}
               <div className="flex items-center gap-1">
                 <span className={`text-[7px] font-black uppercase tracking-tighter text-white/60`}>LV.{player.level}</span>
                 <div className="h-1.5 flex-1 bg-white/10 rounded-full border border-white/5 overflow-hidden">
                   <div className="h-full bg-indigo-500 transition-all duration-500" style={{ width: `${player.experience}%` }} />
                 </div>
               </div>
-              {/* Barra de Reputação */}
               <div className="flex items-center gap-1">
                 <span className={`text-[7px] font-black uppercase tracking-tighter text-amber-500`}>REP.{player.totalReputation}</span>
                 <div className="h-1.5 flex-1 bg-white/10 rounded-full border border-white/5 overflow-hidden">
-                  {/* Progressão de REP baseada no próximo unlock importante (ex: 250) */}
                   <div className="h-full bg-amber-500 transition-all duration-500" style={{ width: `${Math.min(100, (player.totalReputation / 250) * 100)}%` }} />
                 </div>
               </div>
@@ -92,12 +131,20 @@ const HUD: React.FC<HUDProps> = ({
           >
             🗺️
           </button>
-          <button 
-            onClick={onOpenProfile}
-            className="active:scale-90 transition-transform relative group"
-          >
-            <CharacterAvatar player={player} size="sm" />
-          </button>
+          <div className="flex flex-col items-center gap-1">
+            <button 
+              onClick={onOpenProfile}
+              className="active:scale-90 transition-transform relative group"
+            >
+              <CharacterAvatar player={player} size="sm" />
+            </button>
+            <button 
+              onClick={() => setShowCodeInput(true)}
+              className="text-[10px] text-white/20 active:scale-125 transition-transform"
+            >
+              ⚙️
+            </button>
+          </div>
         </div>
       </div>
 

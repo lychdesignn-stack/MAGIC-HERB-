@@ -104,6 +104,7 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
         {activeTab === 'items' && CONSUMABLES.map(item => {
             const currentPrice = getConsumablePrice(item.id, item.price);
             const count = player.inventory[item.id] || 0;
+            const isMaxLevel = count >= 20;
             const canAfford = item.currency === 'coins' ? player.coins >= currentPrice : player.hashCoins >= currentPrice;
             
             return (
@@ -112,13 +113,19 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="font-black text-xs text-white uppercase">{item.name}</h3>
-                    <span className="bg-indigo-600/30 text-indigo-400 text-[8px] px-2 py-0.5 rounded-md border border-indigo-400/20 font-black">NÍVEL {count}</span>
+                    <span className={`${isMaxLevel ? 'bg-red-600/30 text-red-400' : 'bg-indigo-600/30 text-indigo-400'} text-[8px] px-2 py-0.5 rounded-md border border-white/5 font-black uppercase tracking-widest`}>
+                      {isMaxLevel ? 'Nível Máximo' : `Nível ${count}`}
+                    </span>
                   </div>
                   <p className="text-[8px] text-white/30 leading-tight mt-1">{item.description}</p>
                   <p className="text-[9px] text-green-400 font-black uppercase mt-1">Acumulado: {item.passiveBonusLabel}</p>
                 </div>
-                <button onClick={() => onBuyConsumable(item.id)} disabled={!canAfford} className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase border transition-all ${canAfford ? 'bg-white text-black border-white' : 'opacity-20 border-white/10 grayscale'}`}>
-                  {item.currency === 'coins' ? '🪙' : '🍪'} {formatCurrency(currentPrice)}
+                <button 
+                  onClick={() => !isMaxLevel && onBuyConsumable(item.id)} 
+                  disabled={isMaxLevel || !canAfford} 
+                  className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase border transition-all ${isMaxLevel ? 'bg-red-900/20 border-red-500/50 text-red-500/50' : canAfford ? 'bg-white text-black border-white' : 'opacity-20 border-white/10 grayscale'}`}
+                >
+                  {isMaxLevel ? 'BLOQUEADO' : `${item.currency === 'coins' ? '🪙' : '🍪'} ${formatCurrency(currentPrice)}`}
                 </button>
               </div>
             );

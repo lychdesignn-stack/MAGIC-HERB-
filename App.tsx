@@ -18,7 +18,7 @@ const MAP_OFFER_RESET_INTERVAL = 8 * 60 * 1000;
 const SAVE_KEY = 'HERB_HAVEN_SAVE_V19_FINAL'; 
 
 const MIN_MAP_OFFERS = 3;
-const MIN_NPC_OFFERS = 8; // Garante 4+4 para Vendas e Contratos
+const MIN_NPC_OFFERS = 8; 
 
 const createInitialInventory = () => {
   const inv: Record<string, number> = {};
@@ -60,6 +60,30 @@ const App: React.FC = () => {
   const [aiDialogue, setAiDialogue] = useState<string>("");
   const [lastOfferReset, setLastOfferReset] = useState<number>(Date.now());
   const [lastMapReset, setLastMapReset] = useState<number>(Date.now());
+  const [notification, setNotification] = useState<string | null>(null);
+
+  // Sistema de Códigos
+  const handleActivateCode = (code: string) => {
+    const cleanCode = code.toUpperCase().trim();
+    if (cleanCode === 'EOLU') {
+      setPlayer(p => ({
+        ...p,
+        unlockedRarities: [Rarity.COMUM_A, Rarity.COMUM_B, Rarity.RARA, Rarity.LENDARIA, Rarity.MISTICA],
+        totalReputation: Math.max(p.totalReputation, 500),
+        level: Math.max(p.level, 35)
+      }));
+      return "CONTEÚDO TOTAL DESBLOQUEADO!";
+    }
+    if (cleanCode === 'GNORICH') {
+      setPlayer(p => ({ ...p, coins: 999999999 }));
+      return "MOEDAS INFINITAS ATIVADAS!";
+    }
+    if (cleanCode === 'HASC') {
+      setPlayer(p => ({ ...p, hashCoins: 999999999 }));
+      return "HASH COINS INFINITOS ATIVADOS!";
+    }
+    return "CÓDIGO INVÁLIDO";
+  };
 
   useEffect(() => {
     const { totalReputation, level } = player;
@@ -75,13 +99,44 @@ const App: React.FC = () => {
     }
   }, [player.totalReputation, player.level]);
 
+  // Sistema de Recompensas por Nível
   useEffect(() => {
     if (player.experience >= 100) {
+      const nextLevel = player.level + 1;
+      let rewardSeedId = 'kush_comum';
+      let qty = 1;
+      let rewardMsg = "Você ganhou uma semente comum!";
+
+      if (nextLevel >= 51) {
+        rewardSeedId = 'sticky_icky';
+        rewardMsg = "BÔNUS MÍSTICO: Sticky Icky recebida!";
+      } else if (nextLevel >= 35) {
+        rewardSeedId = 'neon_og';
+        rewardMsg = "RECOMPENSA LENDÁRIA: Neon OG recebida!";
+      } else if (nextLevel >= 21) {
+        rewardSeedId = 'northern_lights';
+        qty = 3;
+        rewardMsg = "BÔNUS RARO: 3x Northern Lights recebidas!";
+      } else if (nextLevel >= 11) {
+        rewardSeedId = 'northern_lights';
+        rewardMsg = "RECOMPENSA RARA: Northern Lights recebida!";
+      } else {
+        rewardSeedId = 'lemon_skunk';
+        rewardMsg = "Recompensa de nível: Lemon Skunk recebida!";
+      }
+
       setPlayer(prev => ({
         ...prev,
-        level: prev.level + 1,
-        experience: prev.experience - 100
+        level: nextLevel,
+        experience: prev.experience - 100,
+        inventory: {
+          ...prev.inventory,
+          [rewardSeedId]: (prev.inventory[rewardSeedId] || 0) + qty
+        }
       }));
+
+      setNotification(`LEVEL UP! Nível ${nextLevel}. ${rewardMsg}`);
+      setTimeout(() => setNotification(null), 4000);
     }
   }, [player.experience]);
 
@@ -107,7 +162,6 @@ const App: React.FC = () => {
     return bonus;
   }, [player.activeCosmetics]);
 
-  // Função auxiliar para calcular multiplicador de zona baseado em raridade
   const getZoneMultiplier = (rarity: Rarity): number => {
     switch (rarity) {
       case Rarity.COMUM_B: return 1.1;
@@ -136,22 +190,23 @@ const App: React.FC = () => {
     const isHash = itemId.endsWith('_hash');
     const qty = Math.floor(Math.random() * 3) + 1;
 
-    // REGRA 1 & 2: Preço da loja como valor base oficial.
     const seedShopPrice = Math.floor(seed.baseValue * 0.35);
     const itemBaseValue = isHash ? seedShopPrice * 10 : seedShopPrice;
-    const minPrice = itemBaseValue * qty;
-
-    // REGRA 3 & 4: Multiplicador Entrega Mapa (x1.2) + Multiplicador Zona
+    
     const typeMult = 1.2;
     const zoneMult = getZoneMultiplier(seed.rarity);
     
     let finalPrice = Math.floor(itemBaseValue * qty * typeMult * zoneMult);
 
-    // REGRA 6: Garantir que não seja menor que o mínimo
+    // REGRA 2: Limite de 1000 apenas para Comum e Rara (Mapas sempre pagam em Coins)
+    const isPremium = seed.rarity === Rarity.LENDARIA || seed.rarity === Rarity.MISTICA;
+    if (!isPremium) {
+      finalPrice = Math.min(1000, finalPrice);
+    }
+    
+    // Garantir valor mínimo de semente
+    const minPrice = itemBaseValue * qty;
     finalPrice = Math.max(minPrice, finalPrice);
-
-    // REGRA 7: Limite de 1000
-    finalPrice = Math.min(1000, finalPrice);
 
     return {
       id: Math.random().toString(36).substr(2, 9),
@@ -218,38 +273,60 @@ const App: React.FC = () => {
     const currentStock = currentPlayer.inventory[targetItemId] || 0;
     const quantity = currentStock > 0 ? Math.max(1, Math.floor(currentStock * (0.2 + Math.random() * 0.3))) : (isHash ? 1 : 3);
 
+    // REGRA 1: Hash Coin em ofertas com probabilidades baseadas na raridade
     let currency: 'coins' | 'hashCoins' = forceHash ? 'hashCoins' : 'coins';
+    const roll = Math.random();
+    if (!forceHash) {
+      if (seed.rarity === Rarity.MISTICA) currency = roll < 0.9 ? 'hashCoins' : 'coins';
+      else if (seed.rarity === Rarity.LENDARIA) currency = roll < 0.6 ? 'hashCoins' : 'coins';
+      else if (seed.rarity === Rarity.RARA) currency = roll < 0.4 ? 'hashCoins' : 'coins';
+      else currency = roll < 0.1 ? 'hashCoins' : 'coins';
+    }
 
-    // REGRA 1 & 2: Preço da loja como base
     const seedShopPrice = Math.floor(seed.baseValue * 0.35);
     const itemBaseValue = isHash ? seedShopPrice * 10 : seedShopPrice;
     const minPrice = itemBaseValue * quantity;
 
-    // REGRA 3: Multiplicadores de Venda (1.1) ou Contrato (1.3)
     const isContract = Math.random() > 0.5;
     const typeMult = isContract ? 1.3 : 1.1;
     const zoneMult = getZoneMultiplier(seed.rarity);
 
-    let finalPrice = Math.floor(itemBaseValue * quantity * typeMult * zoneMult);
+    let finalPriceInCoins = Math.floor(itemBaseValue * quantity * typeMult * zoneMult);
 
     if (currency === 'hashCoins') {
-      finalPrice = Math.max(1, Math.floor(finalPrice / 1200));
+      // Valor em Hash Coin é escala menor (dividido por fator de conversão simulado)
+      let finalPrice = Math.max(1, Math.floor(finalPriceInCoins / 800));
+      // Recompensas místicas e lendárias em Hash escalam melhor
+      if (seed.rarity === Rarity.MISTICA) finalPrice = Math.max(finalPrice, 50 + Math.floor(Math.random() * 150));
+      else if (seed.rarity === Rarity.LENDARIA) finalPrice = Math.max(finalPrice, 20 + Math.floor(Math.random() * 80));
+      
+      return { 
+        id: Math.random().toString(36).substr(2, 9), 
+        npcId: npc.id, 
+        itemId: targetItemId, 
+        quantity, 
+        price: finalPrice, 
+        currency, 
+        reputationAward: Math.floor(5 * (npc.multiplier || 1)) 
+      };
     } else {
-      // REGRA 6: Ajuste automático para o valor mínimo
-      finalPrice = Math.max(minPrice, finalPrice);
-      // REGRA 7: Limite de 1000
-      finalPrice = Math.min(1000, finalPrice);
+      // REGRA 2: Limite de 1000 para Comum e Rara (apenas em Coins)
+      const isPremium = seed.rarity === Rarity.LENDARIA || seed.rarity === Rarity.MISTICA;
+      if (!isPremium) {
+        finalPriceInCoins = Math.min(1000, finalPriceInCoins);
+      }
+      finalPriceInCoins = Math.max(minPrice, finalPriceInCoins);
+
+      return { 
+        id: Math.random().toString(36).substr(2, 9), 
+        npcId: npc.id, 
+        itemId: targetItemId, 
+        quantity, 
+        price: finalPriceInCoins, 
+        currency, 
+        reputationAward: Math.floor(5 * (npc.multiplier || 1)) 
+      };
     }
-    
-    return { 
-      id: Math.random().toString(36).substr(2, 9), 
-      npcId: npc.id, 
-      itemId: targetItemId, 
-      quantity, 
-      price: finalPrice, 
-      currency, 
-      reputationAward: Math.floor(5 * (npc.multiplier || 1)) 
-    };
   }, []);
 
   const replenishOffers = useCallback(() => {
@@ -432,6 +509,15 @@ const App: React.FC = () => {
   const handleBuyConsumable = (itemId: string) => {
     const item = CONSUMABLES.find(i => i.id === itemId);
     if (!item) return;
+    
+    // REGRA 3: Limite máximo de nível 20 para utilitários
+    const count = player.inventory[item.id] || 0;
+    if (count >= 20) {
+      setNotification("NÍVEL MÁXIMO ATINGIDO!");
+      setTimeout(() => setNotification(null), 3000);
+      return;
+    }
+
     const currentPrice = getConsumablePrice(item.id, item.price);
     const canAfford = item.currency === 'coins' ? player.coins >= currentPrice : player.hashCoins >= currentPrice;
     if (canAfford) {
@@ -454,7 +540,14 @@ const App: React.FC = () => {
 
   return (
     <div className="h-screen w-full psychedelic-bg text-white flex flex-col overflow-hidden select-none">
-      <HUD player={player} currentEvent={currentEvent} onOpenProfile={() => setActiveScreen('profile')} onOpenMap={() => setActiveScreen('map')} totalBonus={calculateTotalBonus()} passiveBonuses={passiveBonuses} />
+      <HUD player={player} currentEvent={currentEvent} onOpenProfile={() => setActiveScreen('profile')} onOpenMap={() => setActiveScreen('map')} totalBonus={calculateTotalBonus()} passiveBonuses={passiveBonuses} onActivateCode={handleActivateCode} />
+      
+      {notification && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[200] bg-indigo-600/90 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20 shadow-[0_0_30px_rgba(99,102,241,0.5)] animate-in slide-in-from-top duration-500">
+           <p className="font-cartoon text-xs text-center">{notification}</p>
+        </div>
+      )}
+
       <main className="flex-1 overflow-y-auto pt-4 px-4 custom-scrollbar pb-10">
         {activeScreen === 'farm' && <FarmGrid plots={plots} onPlant={handlePlant} onWater={(id) => setPlots(p => p.map(x => x.id === id ? {...x, isWatered: true} : x))} onToggleLight={(id) => setPlots(p => p.map(x => x.id === id ? {...x, isLightOn: !x.isLightOn} : x))} onPrune={(id) => setPlots(p => p.map(x => x.id === id ? {...x, isPruned: true} : x))} onHarvest={handleHarvest} onUpgrade={handleUpgradePlot} inventory={player.inventory} player={player} />}
         {activeScreen === 'warehouse' && <Warehouse player={player} onBack={() => setActiveScreen('farm')} />}

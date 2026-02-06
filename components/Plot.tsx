@@ -91,60 +91,81 @@ const PlotComponent: React.FC<PlotProps> = ({ plot, onPlant, onWater, onToggleLi
     { y: 40, side: 'right' as const },
   ];
 
-  // Configuração de Aura para raridades altas
+  // Configuração de Aura para raridades
   const renderAura = () => {
-    if (!seed || seed.rarity === Rarity.COMUM_A || growth <= 0.05) return null;
+    if (!seed || growth <= 0.05) return null;
 
     const auraSize = 15 + (growth * 25);
-    const opacity = (plot.isLightOn ? 0.6 : 0.3) * growth;
+    const opacity = (plot.isLightOn ? 0.7 : 0.4) * growth;
+    
+    let auraColor = "rgba(255, 255, 255, 0.4)";
+    let particleColor = "white";
+    let isMythic = seed.rarity === Rarity.MISTICA;
+    let isLegendary = seed.rarity === Rarity.LENDARIA;
+    let isRare = seed.rarity === Rarity.RARA;
+
+    if (isMythic) {
+      auraColor = "rgba(168, 85, 247, 0.8)";
+      particleColor = "#f472b6";
+    } else if (isLegendary) {
+      auraColor = "rgba(234, 179, 8, 0.7)";
+      particleColor = "#fbbf24";
+    } else if (isRare) {
+      auraColor = "rgba(59, 130, 246, 0.5)";
+      particleColor = "#93c5fd";
+    } else {
+      // Comum
+      auraColor = "rgba(255, 255, 255, 0.3)";
+      particleColor = "#bbf7d0";
+    }
     
     return (
       <g className="pointer-events-none">
-        {/* Glow de Fundo */}
+        {/* Glow de Fundo Principal */}
         <circle 
           cx="50" 
           cy={85 - (currentStemHeight / 2)} 
           r={auraSize} 
-          fill={seed.glowColor} 
+          fill={auraColor} 
           style={{ 
             filter: 'blur(12px)', 
             opacity: opacity,
             transition: 'all 0.5s ease'
           }} 
-          className={seed.rarity === Rarity.MISTICA ? 'animate-pulse' : ''}
+          className={isLegendary || isMythic ? 'animate-pulse' : ''}
         />
         
-        {/* Partículas para Lendárias e Míticas */}
-        {(seed.rarity === Rarity.LENDARIA || seed.rarity === Rarity.MISTICA) && (
+        {/* Partículas baseadas em raridade */}
+        {(isRare || isLegendary || isMythic) && (
           <g opacity={opacity}>
-            {[...Array(6)].map((_, i) => (
+            {[...Array(isMythic ? 12 : isLegendary ? 8 : 4)].map((_, i) => (
               <circle 
                 key={i}
-                r="1.2"
-                fill="white"
+                r={isMythic ? "1.5" : "1"}
+                fill={particleColor}
                 className="animate-pulse"
                 style={{
-                  animationDelay: `${i * 0.4}s`,
-                  transform: `translate(${50 + Math.sin(i + growth) * 15}px, ${85 - (currentStemHeight * (i/6))}px)`
+                  animationDelay: `${i * 0.3}s`,
+                  transform: `translate(${50 + Math.sin(i + growth * 2) * (15 + i)}px, ${85 - (currentStemHeight * (i/8)) - (Math.random() * 10)}px)`
                 }}
               />
             ))}
           </g>
         )}
 
-        {/* Anel de Energia para Míticas */}
-        {seed.rarity === Rarity.MISTICA && (
+        {/* Anel Místico */}
+        {isMythic && (
           <ellipse 
             cx="50" 
             cy={85 - currentStemHeight} 
-            rx={10 * growth} 
-            ry={4 * growth} 
+            rx={12 * growth} 
+            ry={5 * growth} 
             fill="none" 
             stroke="white" 
-            strokeWidth="0.5" 
-            strokeDasharray="2 4"
+            strokeWidth="0.8" 
+            strokeDasharray="4 4"
             className="animate-spin"
-            style={{ transformOrigin: '50px center', animationDuration: '4s' }}
+            style={{ transformOrigin: '50px center', animationDuration: '3s' }}
           />
         )}
       </g>
@@ -183,21 +204,24 @@ const PlotComponent: React.FC<PlotProps> = ({ plot, onPlant, onWater, onToggleLi
           {/* Renderização da Aura (atrás da planta) */}
           {renderAura()}
 
-          {/* PLANTA */}
+          {/* PLANTA - Com grupo de animação para flutuação mística */}
           {seed && (
-            <g style={{ 
-              filter: plot.isLightOn ? 'none' : 'brightness(0.35) saturate(0.7)',
-              transition: 'filter 0.5s ease'
-            }}>
+            <g 
+              className={seed.rarity === Rarity.MISTICA ? 'animate-drift' : ''}
+              style={{ 
+                filter: plot.isLightOn ? 'none' : 'brightness(0.35) saturate(0.7)',
+                transition: 'filter 0.5s ease'
+              }}
+            >
               {/* Caule Principal */}
               <path 
                 d={`M50,85 L50,${85 - currentStemHeight}`} 
                 fill="none" 
-                stroke={seed.rarity === Rarity.MISTICA ? "white" : "#15803d"} 
+                stroke={seed.rarity === Rarity.MISTICA ? "white" : seed.rarity === Rarity.LENDARIA ? "#f59e0b" : "#15803d"} 
                 strokeWidth={2 + growth * 2} 
                 strokeLinecap="round" 
                 className="transition-all duration-300"
-                style={seed.rarity === Rarity.MISTICA ? { filter: 'drop-shadow(0 0 2px cyan)' } : {}}
+                style={seed.rarity === Rarity.MISTICA ? { filter: 'drop-shadow(0 0 3px cyan)' } : {}}
               />
 
               {/* Sistema de Nós */}
