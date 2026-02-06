@@ -29,19 +29,17 @@ const FarmGrid: React.FC<FarmGridProps> = ({ plots, onPlant, onWater, onToggleLi
   }, [inventory, activeSeedId]);
 
   const handlePlotClick = (plot: Plot) => {
-    if (!plot.seedId && plot.isUnlocked) {
-      if (activeSeedId) {
-        const seed = SEEDS.find(s => s.id === activeSeedId);
-        if (seed && seed.rarity === plot.type) {
-          onPlant(plot.id, activeSeedId);
-        }
-      }
+    // BUG FIX: Removida a verificação de raridade (seed.rarity === plot.type).
+    // Conforme as novas regras, qualquer terreno desbloqueado deve aceitar qualquer semente.
+    // Isso impede o bloqueio falso por zona ou falta de correspondência exata de tipo.
+    if (!plot.seedId && plot.isUnlocked && activeSeedId) {
+      onPlant(plot.id, activeSeedId);
     }
   };
 
   return (
     <div className="flex flex-col items-center w-full max-w-4xl mx-auto relative pb-48">
-      {/* Grade alterada para 2 colunas para melhor distribuição lateral */}
+      {/* Grade de Lotes - Corrigida para aceitar cliques em terrenos disponíveis */}
       <div className="grid grid-cols-2 gap-5 w-full px-2">
         {plots.map(plot => (
           <PlotComponent 
