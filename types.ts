@@ -1,9 +1,10 @@
 
 export enum Rarity {
-  COMMON = 'Common',
-  RARE = 'Rare',
-  LEGENDARY = 'Legendary',
-  MYTHIC = 'Mythic'
+  COMUM_A = 'comumA',
+  COMUM_B = 'comumB',
+  RARA = 'rara',
+  LENDARIA = 'lendaria',
+  MISTICA = 'mistica'
 }
 
 export type RiskLevel = 'low' | 'medium' | 'high';
@@ -13,10 +14,11 @@ export interface Territory {
   name: string;
   riskLevel: RiskLevel;
   riskChance: number;
-  priceBonus: number;
+  priceBonus: number; 
   description: string;
   color: string;
   icon: string;
+  requiredRarity: Rarity;
 }
 
 export interface Title {
@@ -62,6 +64,14 @@ export interface Offer {
   reputationAward: number;
 }
 
+export interface MapOffer {
+  id: string;
+  territoryId: string;
+  itemId: string;
+  quantity: number;
+  price: number;
+}
+
 export interface LuxuryItem {
   id: string;
   name: string;
@@ -94,6 +104,8 @@ export interface Player {
   coins: number;
   hashCoins: number;
   level: number;
+  experience: number;
+  totalReputation: number;
   stats: {
     totalPlanted: number;
     totalSold: number;
@@ -113,9 +125,9 @@ export interface Plot {
   type: Rarity;
   seedId: string | null;
   plantedAt: number | null;
-  accumulatedGrowth: number; // 0 a 1
+  accumulatedGrowth: number; 
   isWatered: boolean;
-  isLightOn: boolean; // Nova propriedade
+  isLightOn: boolean;
   isPruned: boolean;
   isUnlocked: boolean;
   isFertilized: boolean;

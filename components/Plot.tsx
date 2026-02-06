@@ -1,7 +1,7 @@
 
 import React, { useMemo } from 'react';
 import { Plot, Rarity, Player } from '../types';
-import { SEEDS } from '../constants';
+import { SEEDS, RARITY_DISPLAY } from '../constants';
 
 interface PlotProps {
   plot: Plot;
@@ -93,7 +93,7 @@ const PlotComponent: React.FC<PlotProps> = ({ plot, onPlant, onWater, onToggleLi
 
   // Configuração de Aura para raridades altas
   const renderAura = () => {
-    if (!seed || seed.rarity === Rarity.COMMON || growth <= 0.05) return null;
+    if (!seed || seed.rarity === Rarity.COMUM_A || growth <= 0.05) return null;
 
     const auraSize = 15 + (growth * 25);
     const opacity = (plot.isLightOn ? 0.6 : 0.3) * growth;
@@ -111,11 +111,11 @@ const PlotComponent: React.FC<PlotProps> = ({ plot, onPlant, onWater, onToggleLi
             opacity: opacity,
             transition: 'all 0.5s ease'
           }} 
-          className={seed.rarity === Rarity.MYTHIC ? 'animate-pulse' : ''}
+          className={seed.rarity === Rarity.MISTICA ? 'animate-pulse' : ''}
         />
         
         {/* Partículas para Lendárias e Míticas */}
-        {(seed.rarity === Rarity.LEGENDARY || seed.rarity === Rarity.MYTHIC) && (
+        {(seed.rarity === Rarity.LENDARIA || seed.rarity === Rarity.MISTICA) && (
           <g opacity={opacity}>
             {[...Array(6)].map((_, i) => (
               <circle 
@@ -133,7 +133,7 @@ const PlotComponent: React.FC<PlotProps> = ({ plot, onPlant, onWater, onToggleLi
         )}
 
         {/* Anel de Energia para Míticas */}
-        {seed.rarity === Rarity.MYTHIC && (
+        {seed.rarity === Rarity.MISTICA && (
           <ellipse 
             cx="50" 
             cy={85 - currentStemHeight} 
@@ -155,9 +155,9 @@ const PlotComponent: React.FC<PlotProps> = ({ plot, onPlant, onWater, onToggleLi
     <div 
       onClick={() => !plot.seedId && onPlant()}
       className={`relative w-full aspect-square rounded-[2.5rem] overflow-hidden border transition-all duration-500 group cursor-pointer
-      ${plot.type === Rarity.COMMON ? 'bg-zinc-950 border-white/5' : 
-        plot.type === Rarity.RARE ? 'bg-purple-950/20 border-purple-500/20' : 
-        plot.type === Rarity.LEGENDARY ? 'bg-yellow-950/20 border-yellow-500/30' :
+      ${plot.type === Rarity.COMUM_A || plot.type === Rarity.COMUM_B ? 'bg-zinc-950 border-white/5' : 
+        plot.type === Rarity.RARA ? 'bg-purple-950/20 border-purple-500/20' : 
+        plot.type === Rarity.LENDARIA ? 'bg-yellow-950/20 border-yellow-500/30' :
         'bg-green-950/30 border-green-400/50 shadow-[0_0_40px_rgba(74,222,128,0.1)]'}
     `}>
       <div className="absolute inset-0 pointer-events-none">
@@ -193,11 +193,11 @@ const PlotComponent: React.FC<PlotProps> = ({ plot, onPlant, onWater, onToggleLi
               <path 
                 d={`M50,85 L50,${85 - currentStemHeight}`} 
                 fill="none" 
-                stroke={seed.rarity === Rarity.MYTHIC ? "white" : "#15803d"} 
+                stroke={seed.rarity === Rarity.MISTICA ? "white" : "#15803d"} 
                 strokeWidth={2 + growth * 2} 
                 strokeLinecap="round" 
                 className="transition-all duration-300"
-                style={seed.rarity === Rarity.MYTHIC ? { filter: 'drop-shadow(0 0 2px cyan)' } : {}}
+                style={seed.rarity === Rarity.MISTICA ? { filter: 'drop-shadow(0 0 2px cyan)' } : {}}
               />
 
               {/* Sistema de Nós */}
@@ -245,7 +245,7 @@ const PlotComponent: React.FC<PlotProps> = ({ plot, onPlant, onWater, onToggleLi
       {/* Interface de Ações */}
       <div className="absolute inset-0 z-30 flex flex-col items-center justify-between p-4 pointer-events-none">
         <div className="w-full flex justify-between items-start">
-           <span className="text-[7px] font-black uppercase text-white/20 tracking-widest">{plot.type}</span>
+           <span className="text-[7px] font-black uppercase text-white/20 tracking-widest">{RARITY_DISPLAY[plot.type]}</span>
            {growth > 0 && growth < 1 && (
              <div className="bg-black/60 px-2 py-0.5 rounded-full border border-white/10 flex items-center gap-1">
                 <div className={`w-1 h-1 rounded-full ${plot.isLightOn && plot.isWatered ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />

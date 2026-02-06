@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Player, Rarity, Plot, LuxuryItem, ConsumableItem } from '../types';
-import { SEEDS, UPGRADE_COSTS, UPGRADE_LIMITS, LUXURY_ITEMS, CONSUMABLES, TITLES } from '../constants';
+import { SEEDS, UPGRADE_COSTS, UPGRADE_LIMITS, LUXURY_ITEMS, CONSUMABLES, TITLES, RARITY_DISPLAY } from '../constants';
 
 interface ShopProps {
   player: Player;
@@ -19,9 +19,9 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
 
   const getRarityStyles = (rarity: Rarity) => {
     switch (rarity) {
-      case Rarity.MYTHIC: return 'text-green-400 border-green-500/40 bg-green-500/10 shadow-[0_0_10px_rgba(34,197,94,0.3)]';
-      case Rarity.LEGENDARY: return 'text-amber-400 border-amber-500/40 bg-amber-500/10 shadow-[0_0_10px_rgba(245,158,11,0.3)]';
-      case Rarity.RARE: return 'text-purple-400 border-purple-500/30 bg-purple-500/5';
+      case Rarity.MISTICA: return 'text-green-400 border-green-500/40 bg-green-500/10 shadow-[0_0_10px_rgba(34,197,94,0.3)]';
+      case Rarity.LENDARIA: return 'text-amber-400 border-amber-500/40 bg-amber-500/10 shadow-[0_0_10px_rgba(245,158,11,0.3)]';
+      case Rarity.RARA: return 'text-purple-400 border-purple-500/30 bg-purple-500/5';
       default: return 'text-white/40 border-white/10 bg-white/5';
     }
   };
@@ -76,7 +76,7 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
 
       <div className="flex flex-col gap-3">
         {activeTab === 'seeds' && SEEDS.map(seed => {
-            const isPremium = seed.rarity === Rarity.LEGENDARY || seed.rarity === Rarity.MYTHIC;
+            const isPremium = seed.rarity === Rarity.LENDARIA || seed.rarity === Rarity.MISTICA;
             const useHashCoin = isPremium && !!seed.hashCoinPrice;
             const price = useHashCoin ? seed.hashCoinPrice! : Math.floor(seed.baseValue * 0.35);
             const canAfford = useHashCoin ? player.hashCoins >= price : player.coins >= price;
@@ -88,7 +88,7 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
                   <h3 className="font-black text-xs text-white uppercase">{seed.name}</h3>
                   <div className="flex gap-1.5 items-center mt-1">
                     <span className={`text-[7px] font-black uppercase px-2 py-0.5 rounded-full border ${getRarityStyles(seed.rarity)}`}>
-                      {seed.rarity}
+                      {RARITY_DISPLAY[seed.rarity]}
                     </span>
                     <span className="text-[7px] text-zinc-500 font-bold">⌚ {seed.growthTime}s</span>
                   </div>
@@ -139,7 +139,7 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
                  <div className="flex-1">
                    <div className="flex items-center gap-2">
                      <h4 className="text-[10px] font-black text-white uppercase">{item.name}</h4>
-                     <span className={`text-[6px] font-black px-1.5 py-0.5 rounded-full border uppercase ${getRarityStyles(item.rarity)}`}>{item.rarity}</span>
+                     <span className={`text-[6px] font-black px-1.5 py-0.5 rounded-full border uppercase ${getRarityStyles(item.rarity)}`}>{RARITY_DISPLAY[item.rarity]}</span>
                    </div>
                    {!unlocked ? (
                      <p className="text-[8px] text-red-400/80 font-black uppercase mt-1">Requisito: {item.unlockCondition?.label}</p>
@@ -180,7 +180,7 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
                   disabled={owned || !canAfford}
                   className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase border transition-all ${owned ? 'bg-indigo-600/20 border-indigo-500 text-indigo-500' : canAfford ? 'bg-white text-black border-white' : 'opacity-20 border-white/10 grayscale'}`}
                  >
-                   {owned ? 'POSSUÍ' : `🍪 ${title.price}`}
+                   {owned ? `POSSUÍ` : `🍪 ${title.price}`}
                  </button>
               </div>
             );
@@ -195,7 +195,7 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
               <div key={plot.id} className="bg-black/40 backdrop-blur-xl border border-white/5 p-4 rounded-[2rem] flex items-center gap-4 shadow-xl">
                 <div className={`w-14 h-14 rounded-2xl bg-black/40 border flex items-center justify-center text-xl ${getRarityStyles(plot.type)}`}>🚜</div>
                 <div className="flex-1">
-                  <h3 className="font-black text-xs text-white uppercase">Lote #{plot.id + 1} ({plot.type})</h3>
+                  <h3 className="font-black text-xs text-white uppercase">Lote #{plot.id + 1} ({RARITY_DISPLAY[plot.type]})</h3>
                   <div className="flex items-center gap-1.5 mt-1">
                     <span className="text-[9px] font-cartoon text-white">Capacidade: {plot.capacity} / {UPGRADE_LIMITS[plot.type]}</span>
                   </div>

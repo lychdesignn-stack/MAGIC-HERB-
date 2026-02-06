@@ -45,7 +45,7 @@ const HUD: React.FC<HUDProps> = ({
     <div className={`w-full ${themeStyles.bg} backdrop-blur-xl border-b ${themeStyles.border} p-3 flex flex-col gap-2 z-50 transition-all duration-700 ${themeStyles.effectClass || ''}`}>
       {/* Linha Principal: Perfil e Recursos */}
       <div className="flex items-center justify-between">
-        <div className="flex flex-col gap-0.5">
+        <div className="flex flex-col gap-0.5 flex-1 max-w-[70%]">
           <div className="flex items-center gap-1.5 mb-1">
             <div className="flex flex-col">
               <span className={`text-[10px] font-cartoon drop-shadow-md ${themeStyles.text}`}>{player.name}</span>
@@ -55,24 +55,40 @@ const HUD: React.FC<HUDProps> = ({
                 ))}
               </div>
             </div>
-            <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${themeStyles.accent} text-white/60`}>LV.{Math.floor(player.level)}</span>
+            <div className="flex flex-col gap-1 flex-1 ml-2">
+              {/* Barra de Nível / XP */}
+              <div className="flex items-center gap-1">
+                <span className={`text-[7px] font-black uppercase tracking-tighter text-white/60`}>LV.{player.level}</span>
+                <div className="h-1.5 flex-1 bg-white/10 rounded-full border border-white/5 overflow-hidden">
+                  <div className="h-full bg-indigo-500 transition-all duration-500" style={{ width: `${player.experience}%` }} />
+                </div>
+              </div>
+              {/* Barra de Reputação */}
+              <div className="flex items-center gap-1">
+                <span className={`text-[7px] font-black uppercase tracking-tighter text-amber-500`}>REP.{player.totalReputation}</span>
+                <div className="h-1.5 flex-1 bg-white/10 rounded-full border border-white/5 overflow-hidden">
+                  {/* Progressão de REP baseada no próximo unlock importante (ex: 250) */}
+                  <div className="h-full bg-amber-500 transition-all duration-500" style={{ width: `${Math.min(100, (player.totalReputation / 250) * 100)}%` }} />
+                </div>
+              </div>
+            </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className={`px-2.5 py-1 rounded-xl border flex items-center gap-1 min-w-[60px] ${themeStyles.bg} ${themeStyles.border}`}>
+            <div className={`px-2 py-0.5 rounded-lg border flex items-center gap-1 min-w-[50px] ${themeStyles.bg} ${themeStyles.border}`}>
               <span className="text-[10px]">🪙</span>
-              <span className={`font-cartoon text-[10px] ${themeStyles.text}`}>{Math.floor(player.coins)}</span>
+              <span className={`font-cartoon text-[9px] ${themeStyles.text}`}>{Math.floor(player.coins)}</span>
             </div>
-            <div className={`px-2.5 py-1 rounded-xl border flex items-center gap-1 min-w-[60px] ${themeStyles.bg} ${themeStyles.border}`}>
+            <div className={`px-2 py-0.5 rounded-lg border flex items-center gap-1 min-w-[50px] ${themeStyles.bg} ${themeStyles.border}`}>
               <span className="text-[10px]">🍪</span>
-              <span className={`font-cartoon text-[10px] ${themeStyles.text}`}>{Math.floor(player.hashCoins)}</span>
+              <span className={`font-cartoon text-[9px] ${themeStyles.text}`}>{Math.floor(player.hashCoins)}</span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button 
             onClick={onOpenMap}
-            className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl active:scale-90 transition-all shadow-lg border ${themeStyles.bg} ${themeStyles.border} hover:brightness-125`}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg active:scale-90 transition-all shadow-lg border ${themeStyles.bg} ${themeStyles.border} hover:brightness-125`}
           >
             🗺️
           </button>
@@ -86,30 +102,22 @@ const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* Linha de Status: Bônus Ativos */}
-      <div className="flex items-center gap-3 bg-black/20 rounded-xl px-2 py-1.5 border border-white/5 overflow-x-auto no-scrollbar">
-        <span className="text-[7px] font-black uppercase text-white/30 tracking-widest border-r border-white/10 pr-2 whitespace-nowrap">Bônus Ativos</span>
+      <div className="flex items-center gap-3 bg-black/20 rounded-xl px-2 py-1 border border-white/5 overflow-x-auto no-scrollbar">
+        <span className="text-[7px] font-black uppercase text-white/30 tracking-widest border-r border-white/10 pr-2 whitespace-nowrap">Status</span>
         
-        {/* Velocidade de Crescimento */}
-        <div className="flex items-center gap-1.5 whitespace-nowrap group animate-in fade-in zoom-in duration-500">
+        <div className="flex items-center gap-1 whitespace-nowrap group">
            <span className="text-xs">⚡</span>
-           <span className="text-[8px] font-black text-indigo-400 uppercase">Growth: x{passiveBonuses.growthSpeedMultiplier.toFixed(2)}</span>
+           <span className="text-[7px] font-black text-indigo-400 uppercase">Speed: x{passiveBonuses.growthSpeedMultiplier.toFixed(2)}</span>
         </div>
 
-        {/* Extra Buds */}
-        <div className="flex items-center gap-1.5 whitespace-nowrap group animate-in fade-in zoom-in duration-500 delay-75">
+        <div className="flex items-center gap-1 whitespace-nowrap group">
            <span className="text-xs">🧪</span>
-           <span className="text-[8px] font-black text-green-400 uppercase">Extra: +{passiveBonuses.extraBuds}</span>
-        </div>
-
-        {/* Bônus de Colheita de Itens */}
-        <div className="flex items-center gap-1.5 whitespace-nowrap group animate-in fade-in zoom-in duration-500 delay-150">
-           <span className="text-xs">💍</span>
-           <span className="text-[8px] font-black text-amber-400 uppercase">Harvest: +{Math.round(totalBonus * 100)}%</span>
+           <span className="text-[7px] font-black text-green-400 uppercase">Bonus: +{passiveBonuses.extraBuds}</span>
         </div>
 
         {currentEvent && (
           <div className="flex items-center gap-1.5 whitespace-nowrap ml-auto">
-            <span className={`text-[8px] font-cartoon uppercase tracking-widest animate-pulse ${themeStyles.text}`}>
+            <span className={`text-[7px] font-cartoon uppercase tracking-widest animate-pulse ${themeStyles.text}`}>
               ✨ {currentEvent}
             </span>
           </div>
