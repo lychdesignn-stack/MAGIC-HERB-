@@ -7,13 +7,14 @@ interface NPCPanelProps {
   player: Player;
   offers: Offer[];
   onAcceptOffer: (offer: Offer) => void;
+  onBuyFromNPC: (offer: Offer) => void;
   onBack: () => void;
   aiDialogue: string;
   onGreet: (name: string) => void;
   offerResetIn: number;
 }
 
-const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBack, aiDialogue, onGreet, offerResetIn }) => {
+const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBuyFromNPC, onBack, aiDialogue, onGreet, offerResetIn }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const totalReputation = player.totalReputation;
@@ -22,7 +23,6 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBa
   const isNpcUnlocked = (npc: typeof NPCS[0]) => {
     const rarity = npc.rarity || Rarity.COMUM_A;
     
-    // REGRA 10: Desbloqueio por progressão
     if (rarity === Rarity.COMUM_A) return true;
     if (rarity === Rarity.COMUM_B) return totalReputation >= 15 && currentLevel >= 2;
     if (rarity === Rarity.RARA) return totalReputation >= 50 && currentLevel >= 5;
@@ -84,9 +84,35 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBa
     }
   };
 
+  // NPCs com nível Sócio (Rep >= 200) vendem itens para o player
+  const socioOffers = useMemo(() => {
+    const partners = NPCS.filter(npc => (player.reputation[npc.id] || 0) >= 200 && isNpcUnlocked(npc));
+    return partners.map(npc => {
+      // NPC Sócio vende sementes que ele costuma demandar
+      const seedId = npc.demand[0];
+      const seed = SEEDS.find(s => s.id === seedId)!;
+      // Preços baseados na raridade conforme regra 4
+      let price = Math.floor(seed.baseValue * 0.5);
+      if (seed.rarity === Rarity.RARA) price *= 2;
+      if (seed.rarity === Rarity.LENDARIA) price *= 5;
+      if (seed.rarity === Rarity.MISTICA) price *= 10;
+
+      return {
+        id: `socio-${npc.id}`,
+        npcId: npc.id,
+        itemId: seedId,
+        quantity: 1,
+        price,
+        currency: (seed.rarity === Rarity.LENDARIA || seed.rarity === Rarity.MISTICA) ? 'hashCoins' as const : 'coins' as const,
+        reputationAward: 0
+      };
+    });
+  }, [player.reputation, player.unlockedRarities]);
+
   const filteredOffers = offers.filter(offer => {
     const npc = NPCS.find(n => n.id === offer.npcId);
-    return npc && isNpcUnlocked(npc);
+    const rep = player.reputation[offer.npcId] || 0;
+    return npc && isNpcUnlocked(npc) && rep < 200; // Só mostra compra de NPCs não sócios
   });
 
   return (
@@ -99,7 +125,7 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBa
         <div className="bg-white/5 px-2 py-1 rounded-lg border border-white/10 flex items-center gap-2">
            <span className="text-[10px] text-zinc-400 font-bold uppercase">Reputação Total</span>
            <span className="text-xs font-cartoon text-indigo-400">
-             {totalReputation}
+             {player.totalReputation}
            </span>
         </div>
       </div>
@@ -161,9 +187,47 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBa
       </section>
 
       <div className="flex flex-col gap-4 pb-32">
-        <div className="flex items-center justify-between px-2">
+        {/* REGRA 4: Seção de Sócios */}
+        {socioOffers.length > 0 && (
+          <>
+            <h3 className="font-cartoon text-sm text-purple-400 uppercase tracking-widest px-2">Oficina de Sócios (NPC Vende)</h3>
+            {socioOffers.map(offer => {
+              const npc = NPCS.find(n => n.id === offer.npcId)!;
+              const seed = SEEDS.find(s => s.id === offer.itemId)!;
+              const isHashCoin = offer.currency === 'hashCoins';
+              const canAfford = isHashCoin ? player.hashCoins >= offer.price : player.coins >= offer.price;
+
+              return (
+                <div key={offer.id} className="bg-purple-950/20 border border-purple-500/20 p-5 rounded-[2.5rem] flex flex-col gap-4 relative overflow-hidden transition-all shadow-2xl">
+                  <div className={`absolute top-0 right-0 px-5 py-2 rounded-bl-[2rem] flex items-center gap-1.5 z-10 font-cartoon text-xs shadow-xl ${isHashCoin ? 'bg-amber-500 text-black' : 'bg-purple-600 text-white'}`}>
+                    {formatCurrency(offer.price)} {isHashCoin ? '🍪' : '🪙'}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <img src={npc.avatar} className="w-12 h-12 rounded-2xl border border-white/10 bg-zinc-800 p-0.5" />
+                    <div>
+                      <h4 className="text-xs font-black text-white/95">{npc.name} <span className="text-purple-400 text-[8px]">[SÓCIO]</span></h4>
+                      <p className="text-[8px] text-zinc-500 font-bold">"Parceiro, tenho mercadoria nova pra você."</p>
+                    </div>
+                  </div>
+                  <div className="bg-black/40 rounded-[2rem] p-4 flex items-center justify-between border border-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl border border-white/5 bg-zinc-900">🌱</div>
+                      <div>
+                        <p className="text-[11px] font-black text-white/95">{seed.name}</p>
+                        <span className="text-[8px] text-zinc-500 uppercase font-black tracking-widest">{RARITY_DISPLAY[seed.rarity]}</span>
+                      </div>
+                    </div>
+                    <button onClick={() => onBuyFromNPC(offer)} disabled={!canAfford} className={`px-6 py-3 rounded-2xl font-cartoon text-[10px] uppercase transition-all ${canAfford ? 'bg-purple-600 text-white active:translate-y-1' : 'bg-zinc-800 text-zinc-600 grayscale'}`}>Comprar</button>
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        <div className="flex items-center justify-between px-2 mt-2">
           <div className="flex flex-col">
-            <h3 className="font-cartoon text-sm text-yellow-400 uppercase tracking-widest">Contratos Ativos</h3>
+            <h3 className="font-cartoon text-sm text-yellow-400 uppercase tracking-widest">Contratos Disponíveis (NPC Compra)</h3>
             <div className="flex items-center gap-2">
               <p className="text-[8px] text-zinc-500 font-bold italic">*Contratos expiram em breve</p>
               <div className="flex items-center gap-1 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
@@ -177,7 +241,7 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBa
         {filteredOffers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 bg-white/5 rounded-[3rem] border border-dashed border-white/10 opacity-30">
              <span className="text-5xl mb-4">🛸</span>
-             <p className="text-[10px] font-cartoon uppercase tracking-widest text-center px-10 leading-relaxed">Aguardando novos contatos disponíveis...</p>
+             <p className="text-[10px] font-cartoon uppercase tracking-widest text-center px-10 leading-relaxed">Sem contratos de compra agora. Sócios ainda estão vendendo!</p>
           </div>
         ) : (
           filteredOffers.map(offer => {
@@ -189,65 +253,33 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBa
             const isHashCoin = offer.currency === 'hashCoins';
 
             return (
-              <div 
-                key={offer.id} 
-                className={`
-                  bg-zinc-900/90 border border-white/5 p-5 rounded-[2.5rem] flex flex-col gap-4 relative overflow-hidden transition-all shadow-2xl active:scale-[0.98]
-                  ${isHashCoin ? 'ring-2 ring-amber-500/30' : 'hover:border-indigo-500/40'}
-                `}
-              >
-                <div className={`absolute top-0 right-0 px-5 py-2 rounded-bl-[2rem] flex items-center gap-1.5 z-10 font-cartoon text-xs shadow-xl
-                  ${isHashCoin ? 'bg-amber-500 text-black' : 'bg-indigo-600 text-white'}
-                `}>
+              <div key={offer.id} className={`bg-zinc-900/90 border border-white/5 p-5 rounded-[2.5rem] flex flex-col gap-4 relative overflow-hidden transition-all shadow-2xl ${isHashCoin ? 'ring-2 ring-amber-500/30' : 'hover:border-indigo-500/40'}`}>
+                <div className={`absolute top-0 right-0 px-5 py-2 rounded-bl-[2rem] flex items-center gap-1.5 z-10 font-cartoon text-xs shadow-xl ${isHashCoin ? 'bg-amber-500 text-black' : 'bg-indigo-600 text-white'}`}>
                   {formatCurrency(offer.price)} {isHashCoin ? '🍪' : '🪙'}
                 </div>
-
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-3">
-                    <img src={npc.avatar} className="w-12 h-12 rounded-2xl border border-white/10 bg-zinc-800 p-0.5 shadow-md" />
-                    <div>
-                      <h4 className="text-xs font-black text-white/95 tracking-tight">{npc.name}</h4>
-                      <span className="text-[9px] text-indigo-400 font-black uppercase">+5 XP / +5 REP</span>
-                    </div>
+                <div className="flex items-center gap-3">
+                  <img src={npc.avatar} className="w-12 h-12 rounded-2xl border border-white/10 bg-zinc-800 p-0.5 shadow-md" />
+                  <div>
+                    <h4 className="text-xs font-black text-white/95 tracking-tight">{npc.name}</h4>
+                    <span className="text-[9px] text-indigo-400 font-black uppercase">Fórmula Reputação Ativa</span>
                   </div>
                 </div>
-
                 <div className="bg-black/40 rounded-[2rem] p-4 flex items-center justify-between border border-white/5 group relative overflow-hidden">
                   <div className="flex items-center gap-3 relative z-10">
-                    <div 
-                      className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl border border-white/10 shadow-inner"
-                      style={{ backgroundColor: seed.color + '15' }}
-                    >
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl border border-white/10 shadow-inner" style={{ backgroundColor: seed.color + '15' }}>
                       {isHash ? '🍫' : '🌿'}
                     </div>
                     <div>
                       <p className="text-[11px] font-black text-white/95">{seed.name}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <div className="w-24 h-2 bg-white/5 rounded-full overflow-hidden border border-white/10 p-[1px]">
-                           <div 
-                             className={`h-full transition-all duration-700 rounded-full ${hasStock ? 'bg-green-500' : 'bg-red-500'}`} 
-                             style={{ width: `${Math.min(100, (playerQty / offer.quantity) * 100)}%` }} 
-                           />
+                           <div className={`h-full transition-all duration-700 rounded-full ${hasStock ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${Math.min(100, (playerQty / offer.quantity) * 100)}%` }} />
                         </div>
-                        <span className={`text-[9px] font-black tabular-nums ${hasStock ? 'text-green-400' : 'text-red-400'}`}>
-                          {playerQty}/{offer.quantity}
-                        </span>
+                        <span className={`text-[9px] font-black tabular-nums ${hasStock ? 'text-green-400' : 'text-red-400'}`}>{playerQty}/{offer.quantity}</span>
                       </div>
                     </div>
                   </div>
-
-                  <button 
-                    disabled={!hasStock}
-                    onClick={() => onAcceptOffer(offer)}
-                    className={`
-                      px-6 py-3.5 rounded-2xl font-cartoon text-[10px] uppercase tracking-[0.15em] transition-all
-                      ${hasStock 
-                        ? 'bg-indigo-600 text-white active:translate-y-1' 
-                        : 'bg-zinc-800 text-zinc-600 grayscale'}
-                    `}
-                  >
-                    Vender
-                  </button>
+                  <button disabled={!hasStock} onClick={() => onAcceptOffer(offer)} className={`px-6 py-3.5 rounded-2xl font-cartoon text-[10px] uppercase transition-all ${hasStock ? 'bg-indigo-600 text-white active:translate-y-1' : 'bg-zinc-800 text-zinc-600 grayscale'}`}>Vender</button>
                 </div>
               </div>
             );

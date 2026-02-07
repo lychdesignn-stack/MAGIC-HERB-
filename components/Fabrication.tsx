@@ -13,11 +13,15 @@ const Fabrication: React.FC<FabricationProps> = ({ player, onFabricate, onBack }
   const [isExtracting, setIsExtracting] = useState<string | null>(null);
 
   const startExtraction = (seedId: string) => {
+    // REGRA 2: Validação robusta de extração
+    const budsCount = player.inventory[`${seedId}_bud`] || 0;
+    if (budsCount < 10) return;
+
     setIsExtracting(seedId);
     setTimeout(() => {
       onFabricate(seedId);
       setIsExtracting(null);
-    }, 2000);
+    }, 2500);
   };
 
   return (
@@ -25,7 +29,7 @@ const Fabrication: React.FC<FabricationProps> = ({ player, onFabricate, onBack }
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="font-cartoon text-3xl text-yellow-500">O Laboratório</h2>
-          <p className="text-[10px] text-amber-200/40 uppercase tracking-tighter">Prensa fria artesanal</p>
+          <p className="text-[10px] text-amber-200/40 uppercase tracking-tighter">Prensa fria artesanal (Min. 10 Flores)</p>
         </div>
       </div>
 
@@ -33,14 +37,14 @@ const Fabrication: React.FC<FabricationProps> = ({ player, onFabricate, onBack }
         {SEEDS.map(seed => {
           const budsCount = player.inventory[`${seed.id}_bud`] || 0;
           const hashCount = player.inventory[`${seed.id}_hash`] || 0;
-          const canFabricate = budsCount >= 5 && !isExtracting;
+          const canFabricate = budsCount >= 10 && !isExtracting;
 
           return (
             <div key={seed.id} className="bg-black/40 border border-white/5 rounded-2xl p-4 flex flex-col gap-3 relative overflow-hidden">
               {isExtracting === seed.id && (
                 <div className="absolute inset-0 bg-amber-500/10 backdrop-blur-md z-10 flex flex-col items-center justify-center">
                   <div className="w-10 h-10 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mb-2" />
-                  <span className="text-[10px] font-cartoon text-amber-500 uppercase">Extraindo...</span>
+                  <span className="text-[10px] font-cartoon text-amber-500 uppercase">Processando Extração...</span>
                 </div>
               )}
               
@@ -49,11 +53,11 @@ const Fabrication: React.FC<FabricationProps> = ({ player, onFabricate, onBack }
                   <div className="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center text-xl">🌿</div>
                   <div>
                     <h3 className="font-bold text-xs">{seed.name}</h3>
-                    <p className="text-[10px] text-white/40">Disp.: {budsCount} flores</p>
+                    <p className={`text-[10px] font-bold ${budsCount >= 10 ? 'text-green-400' : 'text-red-400'}`}>Estoque: {budsCount} flores</p>
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
-                   <span className="text-[10px] text-amber-500 font-bold">Estoque Hash: {hashCount}</span>
+                   <span className="text-[10px] text-amber-500 font-black">HAXIXE: {hashCount}</span>
                 </div>
               </div>
 
@@ -67,7 +71,7 @@ const Fabrication: React.FC<FabricationProps> = ({ player, onFabricate, onBack }
                     : 'bg-white/5 text-white/20'}
                 `}
               >
-                {budsCount < 5 ? `Precisa de 5 Flores` : 'PRENSAR HAXIXE'}
+                {budsCount < 10 ? `Faltam ${10 - budsCount} Flores` : 'PRENSAR HAXIXE'}
               </button>
             </div>
           );
