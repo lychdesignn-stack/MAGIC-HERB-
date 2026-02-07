@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Player, Plot, Rarity, Offer, MapOffer } from './types';
-// Adicionado RARITY_DISPLAY aos imports para resolver o erro de referência na linha 463
 import { SEEDS, NPCS, LUXURY_ITEMS, UPGRADE_COSTS, TERRITORIES, CONSUMABLES, TITLES, RARITY_DISPLAY } from './constants';
 import FarmGrid from './components/FarmGrid';
 import BottomNav from './components/BottomNav';
@@ -90,10 +89,11 @@ const App: React.FC = () => {
     const { totalReputation, level } = player;
     const newUnlocked: Rarity[] = [Rarity.COMUM_A];
 
-    if (totalReputation >= 15 && level >= 2) newUnlocked.push(Rarity.COMUM_B);
-    if (totalReputation >= 50 && level >= 5) newUnlocked.push(Rarity.RARA);
-    if (totalReputation >= 120 && level >= 9) newUnlocked.push(Rarity.LENDARIA);
-    if (totalReputation >= 250 && level >= 15) newUnlocked.push(Rarity.MISTICA);
+    // REGRA 3: Aumento de requisitos das zonas (raridades)
+    if (totalReputation >= 18 && level >= 3) newUnlocked.push(Rarity.COMUM_B);
+    if (totalReputation >= 75 && level >= 7) newUnlocked.push(Rarity.RARA);
+    if (totalReputation >= 180 && level >= 12) newUnlocked.push(Rarity.LENDARIA);
+    if (totalReputation >= 450 && level >= 23) newUnlocked.push(Rarity.MISTICA);
 
     if (JSON.stringify(newUnlocked) !== JSON.stringify(player.unlockedRarities)) {
       setPlayer(prev => ({ ...prev, unlockedRarities: newUnlocked }));
@@ -409,10 +409,10 @@ const App: React.FC = () => {
     return () => clearInterval(tick);
   }, [lastOfferReset, lastMapReset, refreshOffers, refreshMapOffers, passiveBonuses.growthSpeedMultiplier]);
 
-  // REGRA 3: Rebalanceamento Reputação
+  // REGRA 2: Rebalanceamento Reputação (-40% base e curva por nível/8)
   const calculateReputationGain = (base: number, level: number) => {
-    const reducedBase = base * 0.5;
-    return Math.max(1, Math.floor(reducedBase * (1 / (1 + level / 10))));
+    const reducedBase = base * 0.6; // Reduz em 40% (sobra 60%)
+    return Math.max(1, Math.floor(reducedBase * (1 / (1 + level / 8))));
   };
 
   const handleMapSale = (offerId: string, wasBusted: boolean) => {

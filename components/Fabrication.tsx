@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Player } from '../types';
 import { SEEDS } from '../constants';
@@ -52,12 +51,9 @@ const Fabrication: React.FC<FabricationProps> = ({ player, onFabricate, onBack }
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center text-xl">🌿</div>
                   <div>
-                    <h3 className="font-bold text-xs">{seed.name}</h3>
-                    <p className={`text-[10px] font-bold ${budsCount >= 10 ? 'text-green-400' : 'text-red-400'}`}>Estoque: {budsCount} flores</p>
+                    <h3 className={`font-bold text-xs ${budsCount >= 10 ? 'text-white' : 'text-white/40'}`}>{seed.name} x{budsCount}</h3>
+                    <p className="text-[10px] text-amber-500 font-black uppercase tracking-widest mt-0.5">Haxixe: {hashCount}</p>
                   </div>
-                </div>
-                <div className="flex flex-col items-end">
-                   <span className="text-[10px] text-amber-500 font-black">HAXIXE: {hashCount}</span>
                 </div>
               </div>
 

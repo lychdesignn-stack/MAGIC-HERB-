@@ -21,14 +21,25 @@ const CityMap: React.FC<CityMapProps> = ({ player, mapOffers, onSale, onBack }) 
     const level = player.level;
     const rarity = territory.requiredRarity;
     
-    // REGRA 10: Desbloqueio
-    if (rarity === Rarity.COMUM_A) return { locked: false, req: "" };
-    if (rarity === Rarity.COMUM_B) return { locked: !(totalRep >= 15 && level >= 2), req: "REP 15 | LVL 2" };
-    if (rarity === Rarity.RARA) return { locked: !(totalRep >= 50 && level >= 5), req: "REP 50 | LVL 5" };
-    if (rarity === Rarity.LENDARIA) return { locked: !(totalRep >= 120 && level >= 9), req: "REP 120 | LVL 9" };
-    if (rarity === Rarity.MISTICA) return { locked: !(totalRep >= 250 && level >= 15), req: "REP 250 | LVL 15" };
+    // REGRA 3: Novos Requisitos ajustados
+    let requiredRep = 0;
+    let requiredLv = 0;
+
+    if (rarity === Rarity.COMUM_A) { requiredRep = 0; requiredLv = 0; }
+    else if (rarity === Rarity.COMUM_B) { requiredRep = 18; requiredLv = 3; }
+    else if (rarity === Rarity.RARA) { requiredRep = 75; requiredLv = 7; }
+    else if (rarity === Rarity.LENDARIA) { requiredRep = 180; requiredLv = 12; }
+    else if (rarity === Rarity.MISTICA) { requiredRep = 450; requiredLv = 23; }
+
+    const isLocked = totalRep < requiredRep || level < requiredLv;
     
-    return { locked: false, req: "" };
+    return { 
+      locked: isLocked, 
+      req: `REP ${requiredRep} | LVL ${requiredLv}`,
+      requiredRep,
+      requiredLv,
+      progress: Math.min(100, (Math.min(1, totalRep/requiredRep || 1) * 0.5 + Math.min(1, level/requiredLv || 1) * 0.5) * 100)
+    };
   };
 
   const handleStartDeal = (offer: MapOffer) => {
@@ -134,13 +145,19 @@ const CityMap: React.FC<CityMapProps> = ({ player, mapOffers, onSale, onBack }) 
       {selectedTerritory && !isNegotiating && (
         <div className="fixed inset-x-0 bottom-0 z-[200] bg-zinc-950/98 backdrop-blur-3xl border-t-2 border-white/10 p-7 rounded-t-[3.5rem] animate-in slide-in-from-bottom duration-500 shadow-[0_-20px_60px_rgba(0,0,0,0.8)]">
            {(() => {
-             const { locked, req } = checkZoneAccess(selectedTerritory);
+             const { locked, req, progress } = checkZoneAccess(selectedTerritory);
              if (locked) {
                return (
                  <div className="flex flex-col gap-6 text-center">
                     <span className="text-5xl">🛑</span>
                     <h3 className="font-cartoon text-xl text-zinc-400">Ponto Restrito</h3>
-                    <p className="text-[10px] text-red-400 uppercase font-black">Requisito: {req}</p>
+                    <div className="flex flex-col gap-2">
+                      <p className="text-[10px] text-red-400 uppercase font-black">Requisito: {req}</p>
+                      <div className="h-1.5 w-full bg-white/5 rounded-full border border-white/10 overflow-hidden">
+                        <div className="h-full bg-red-500 transition-all duration-1000" style={{ width: `${progress}%` }} />
+                      </div>
+                      <p className="text-[8px] text-white/20 font-black uppercase tracking-widest">{Math.floor(progress)}% DESBLOQUEADO</p>
+                    </div>
                     <button onClick={() => setSelectedTerritory(null)} className="py-4 bg-white/5 rounded-2xl text-[10px] font-black uppercase text-white/40">Sair</button>
                  </div>
                );
@@ -193,7 +210,7 @@ const CityMap: React.FC<CityMapProps> = ({ player, mapOffers, onSale, onBack }) 
                         disabled={!hasEnough}
                         onClick={() => handleStartDeal(offer)}
                         className={`w-full py-5 rounded-[2rem] font-cartoon text-sm shadow-2xl transition-all
-                          ${hasEnough ? 'bg-white text-black active:scale-95' : 'bg-zinc-800 text-zinc-600 grayscale'}
+                          ${hasEnough ? 'bg-white text-black active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)]' : 'bg-zinc-800 text-zinc-600 grayscale'}
                         `}
                       >
                         {hasEnough ? 'EFETUAR ENTREGA' : 'ESTOQUE INSUFICIENTE'}

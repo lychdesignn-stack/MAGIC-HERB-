@@ -24,20 +24,20 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBu
     const rarity = npc.rarity || Rarity.COMUM_A;
     
     if (rarity === Rarity.COMUM_A) return true;
-    if (rarity === Rarity.COMUM_B) return totalReputation >= 15 && currentLevel >= 2;
-    if (rarity === Rarity.RARA) return totalReputation >= 50 && currentLevel >= 5;
-    if (rarity === Rarity.LENDARIA) return totalReputation >= 120 && currentLevel >= 9;
-    if (rarity === Rarity.MISTICA) return totalReputation >= 250 && currentLevel >= 15;
+    if (rarity === Rarity.COMUM_B) return totalReputation >= 18 && currentLevel >= 3;
+    if (rarity === Rarity.RARA) return totalReputation >= 75 && currentLevel >= 7;
+    if (rarity === Rarity.LENDARIA) return totalReputation >= 180 && currentLevel >= 12;
+    if (rarity === Rarity.MISTICA) return totalReputation >= 450 && currentLevel >= 23;
     
     return true;
   };
 
   const getUnlockRequirementLabel = (npc: typeof NPCS[0]) => {
     const rarity = npc.rarity || Rarity.COMUM_A;
-    if (rarity === Rarity.COMUM_B) return "REP 15 | LVL 2";
-    if (rarity === Rarity.RARA) return "REP 50 | LVL 5";
-    if (rarity === Rarity.LENDARIA) return "REP 120 | LVL 9";
-    if (rarity === Rarity.MISTICA) return "REP 250 | LVL 15";
+    if (rarity === Rarity.COMUM_B) return "REP 18 | LVL 3";
+    if (rarity === Rarity.RARA) return "REP 75 | LVL 7";
+    if (rarity === Rarity.LENDARIA) return "REP 180 | LVL 12";
+    if (rarity === Rarity.MISTICA) return "REP 450 | LVL 23";
     return "Acesso Livre";
   };
 
@@ -72,7 +72,7 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBu
   const getRarityBadgeStyles = (rarity?: Rarity) => {
     switch (rarity) {
       case Rarity.MISTICA:
-        return 'bg-emerald-600 border-emerald-400 text-white shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse-gold';
+        return 'bg-purple-600 border-purple-400 text-white shadow-[0_0_10px_rgba(168,85,247,0.8)] animate-pulse';
       case Rarity.LENDARIA:
         return 'bg-amber-500 border-amber-300 text-black shadow-[0_0_10px_rgba(245,158,11,0.8)]';
       case Rarity.RARA:
@@ -141,11 +141,12 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBu
             const rep = player.reputation[npc.id] || 0;
             const { label, color, icon, bg } = getReputationLabel(rep);
             const rarityDisplay = RARITY_DISPLAY[npc.rarity || Rarity.COMUM_A];
+            const isMysticNpc = npc.rarity === Rarity.MISTICA;
             
             return (
               <div key={npc.id} className="flex-shrink-0 flex flex-col items-center gap-2 w-20 transition-all duration-300">
                 <div className={`relative ${!unlocked ? 'grayscale-[0.8]' : ''}`}>
-                   <div className={`w-14 h-14 rounded-2xl border border-white/10 overflow-hidden relative z-10 flex items-center justify-center transition-all ${unlocked ? 'bg-zinc-800 shadow-lg' : 'bg-zinc-950/90 border-dashed opacity-40 shadow-inner'}`}>
+                   <div className={`w-14 h-14 rounded-2xl border border-white/10 overflow-hidden relative z-10 flex items-center justify-center transition-all ${unlocked ? (isMysticNpc ? 'neon-border neon-purple' : 'bg-zinc-800 shadow-lg') : 'bg-zinc-950/90 border-dashed opacity-40 shadow-inner'}`}>
                      {unlocked ? (
                        <img src={npc.avatar} className="w-full h-full object-cover pointer-events-none" />
                      ) : (
@@ -168,7 +169,7 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBu
                    )}
                 </div>
                 <div className="text-center w-full">
-                  <span className={`text-[9px] font-black block truncate leading-none mb-1 ${unlocked ? 'text-white/80' : 'text-white/30 uppercase'}`}>
+                  <span className={`text-[9px] font-black block truncate leading-none mb-1 ${unlocked ? (isMysticNpc ? 'text-purple-400' : 'text-white/80') : 'text-white/30 uppercase'}`}>
                     {npc.name}
                   </span>
                   {unlocked ? (
@@ -251,17 +252,18 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBu
             const playerQty = player.inventory[offer.itemId] || 0;
             const hasStock = playerQty >= offer.quantity;
             const isHashCoin = offer.currency === 'hashCoins';
+            const isMysticDeal = npc.rarity === Rarity.MISTICA;
 
             return (
-              <div key={offer.id} className={`bg-zinc-900/90 border border-white/5 p-5 rounded-[2.5rem] flex flex-col gap-4 relative overflow-hidden transition-all shadow-2xl ${isHashCoin ? 'ring-2 ring-amber-500/30' : 'hover:border-indigo-500/40'}`}>
+              <div key={offer.id} className={`bg-zinc-900/90 border border-white/5 p-5 rounded-[2.5rem] flex flex-col gap-4 relative overflow-hidden transition-all shadow-2xl ${isMysticDeal ? 'neon-border neon-purple' : isHashCoin ? 'ring-2 ring-amber-500/30' : 'hover:border-indigo-500/40'}`}>
                 <div className={`absolute top-0 right-0 px-5 py-2 rounded-bl-[2rem] flex items-center gap-1.5 z-10 font-cartoon text-xs shadow-xl ${isHashCoin ? 'bg-amber-500 text-black' : 'bg-indigo-600 text-white'}`}>
                   {formatCurrency(offer.price)} {isHashCoin ? '🍪' : '🪙'}
                 </div>
                 <div className="flex items-center gap-3">
                   <img src={npc.avatar} className="w-12 h-12 rounded-2xl border border-white/10 bg-zinc-800 p-0.5 shadow-md" />
                   <div>
-                    <h4 className="text-xs font-black text-white/95 tracking-tight">{npc.name}</h4>
-                    <span className="text-[9px] text-indigo-400 font-black uppercase">Fórmula Reputação Ativa</span>
+                    <h4 className={`text-xs font-black tracking-tight ${isMysticDeal ? 'text-purple-400' : 'text-white/95'}`}>{npc.name}</h4>
+                    <span className="text-[9px] text-indigo-400 font-black uppercase">Contrato Especial MIX</span>
                   </div>
                 </div>
                 <div className="bg-black/40 rounded-[2rem] p-4 flex items-center justify-between border border-white/5 group relative overflow-hidden">

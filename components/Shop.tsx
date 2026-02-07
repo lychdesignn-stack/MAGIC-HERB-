@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Player, Rarity, Plot, LuxuryItem, ConsumableItem } from '../types';
 import { SEEDS, UPGRADE_COSTS, UPGRADE_LIMITS, LUXURY_ITEMS, CONSUMABLES, TITLES, RARITY_DISPLAY } from '../constants';
@@ -13,6 +12,39 @@ interface ShopProps {
   getConsumablePrice: (itemId: string, basePrice: number) => number;
   onBack: () => void;
 }
+
+const PurchaseButton: React.FC<{
+  onClick: () => void;
+  disabled: boolean;
+  label: React.ReactNode;
+  activeClass?: string;
+  isLocked?: boolean;
+}> = ({ onClick, disabled, label, activeClass = "bg-white text-black border-white", isLocked = false }) => {
+  const [processing, setProcessing] = useState(false);
+
+  const handleClick = () => {
+    if (disabled || processing || isLocked) return;
+    setProcessing(true);
+    onClick();
+    setTimeout(() => setProcessing(false), 500);
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={disabled || processing || isLocked}
+      className={`relative overflow-hidden px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase border transition-all duration-300
+        ${processing ? 'scale-95 brightness-150 shadow-[0_0_20px_white]' : 'active:scale-95'}
+        ${isLocked ? 'bg-red-900/20 border-red-500/50 text-red-500/50' : disabled ? 'opacity-20 border-white/10 grayscale' : activeClass}
+      `}
+    >
+      <span className={processing ? 'animate-pulse' : ''}>{label}</span>
+      {processing && (
+        <span className="absolute inset-0 bg-white/20 animate-ping" />
+      )}
+    </button>
+  );
+};
 
 const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyLuxury, onBuyConsumable, getConsumablePrice, onBack }) => {
   const [activeTab, setActiveTab] = useState<'seeds' | 'items' | 'premium' | 'titles' | 'lands'>('seeds');
@@ -80,12 +112,13 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
             const useHashCoin = isPremium && !!seed.hashCoinPrice;
             const price = useHashCoin ? seed.hashCoinPrice! : Math.floor(seed.baseValue * 0.35);
             const canAfford = useHashCoin ? player.hashCoins >= price : player.coins >= price;
+            const inventoryQty = player.inventory[seed.id] || 0;
             
             return (
               <div key={seed.id} className="bg-black/40 backdrop-blur-xl border border-white/5 p-4 rounded-[2rem] flex items-center gap-4 group shadow-xl">
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl bg-black/40 border ${getRarityStyles(seed.rarity)}`}>🌱</div>
                 <div className="flex-1">
-                  <h3 className="font-black text-xs text-white uppercase">{seed.name}</h3>
+                  <h3 className="font-black text-xs text-white uppercase">{seed.name} x{inventoryQty}</h3>
                   <div className="flex gap-1.5 items-center mt-1">
                     <span className={`text-[7px] font-black uppercase px-2 py-0.5 rounded-full border ${getRarityStyles(seed.rarity)}`}>
                       {RARITY_DISPLAY[seed.rarity]}
@@ -93,9 +126,11 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
                     <span className="text-[7px] text-zinc-500 font-bold">⌚ {seed.growthTime}s</span>
                   </div>
                 </div>
-                <button onClick={() => onBuy(seed.id, price, useHashCoin)} disabled={!canAfford} className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase border transition-all ${canAfford ? 'bg-white text-black border-white' : 'opacity-20 border-white/10 grayscale'}`}>
-                  {useHashCoin ? '🍪' : '🪙'} {price}
-                </button>
+                <PurchaseButton 
+                  onClick={() => onBuy(seed.id, price, useHashCoin)} 
+                  disabled={!canAfford} 
+                  label={<>{useHashCoin ? '🍪' : '🪙'} {price}</>}
+                />
               </div>
             );
           })
@@ -112,7 +147,7 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl bg-black/40 border border-white/10">{item.icon}</div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-black text-xs text-white uppercase">{item.name}</h3>
+                    <h3 className="font-black text-xs text-white uppercase">{item.name} x{count}</h3>
                     <span className={`${isMaxLevel ? 'bg-red-600/30 text-red-400' : 'bg-indigo-600/30 text-indigo-400'} text-[8px] px-2 py-0.5 rounded-md border border-white/5 font-black uppercase tracking-widest`}>
                       {isMaxLevel ? 'Nível Máximo' : `Nível ${count}`}
                     </span>
@@ -120,13 +155,12 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
                   <p className="text-[8px] text-white/30 leading-tight mt-1">{item.description}</p>
                   <p className="text-[9px] text-green-400 font-black uppercase mt-1">Acumulado: {item.passiveBonusLabel}</p>
                 </div>
-                <button 
-                  onClick={() => !isMaxLevel && onBuyConsumable(item.id)} 
-                  disabled={isMaxLevel || !canAfford} 
-                  className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase border transition-all ${isMaxLevel ? 'bg-red-900/20 border-red-500/50 text-red-500/50' : canAfford ? 'bg-white text-black border-white' : 'opacity-20 border-white/10 grayscale'}`}
-                >
-                  {isMaxLevel ? 'BLOQUEADO' : `${item.currency === 'coins' ? '🪙' : '🍪'} ${formatCurrency(currentPrice)}`}
-                </button>
+                <PurchaseButton 
+                  onClick={() => onBuyConsumable(item.id)} 
+                  disabled={!canAfford} 
+                  isLocked={isMaxLevel}
+                  label={isMaxLevel ? 'BLOQUEADO' : <>{item.currency === 'coins' ? '🪙' : '🍪'} {formatCurrency(currentPrice)}</>}
+                />
               </div>
             );
           })
@@ -158,15 +192,12 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
                       <span className="text-[6px] font-black text-zinc-500 uppercase tracking-widest">{item.category.replace('_', ' ')}</span>
                    </div>
                  </div>
-                 <button 
-                  onClick={() => unlocked && !owned && onBuyLuxury(item.id)} 
+                 <PurchaseButton 
+                  onClick={() => onBuyLuxury(item.id)} 
                   disabled={!unlocked || owned || !canAfford} 
-                  className={`px-4 py-3 rounded-2xl text-[10px] font-black uppercase border transition-all min-w-[80px]
-                    ${owned ? 'bg-green-600/20 border-green-500 text-green-500' : unlocked && canAfford ? 'bg-white text-black border-white active:scale-95' : 'opacity-20 border-white/10 grayscale'}
-                  `}
-                >
-                   {owned ? 'POSSUÍ' : item.price === 0 ? 'GRÁTIS' : unlocked ? `${item.currency === 'coins' ? '🪙' : '🍪'} ${formatCurrency(item.price)}` : 'FECHADO'}
-                 </button>
+                  activeClass={owned ? 'bg-green-600/20 border-green-500 text-green-500' : 'bg-white text-black border-white'}
+                  label={owned ? 'POSSUÍ' : item.price === 0 ? 'GRÁTIS' : unlocked ? <>{item.currency === 'coins' ? '🪙' : '🍪'} {formatCurrency(item.price)}</> : 'FECHADO'}
+                 />
               </div>
             );
           })
@@ -182,13 +213,12 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
                    <h3 className="font-black text-xs text-white uppercase">{title.name}</h3>
                    <p className="text-[8px] text-white/30 mt-1">Prestígio Social</p>
                  </div>
-                 <button 
-                  onClick={() => !owned && canAfford && window.dispatchEvent(new CustomEvent('BUY_TITLE', { detail: { id: title.id, price: title.price } }))} 
+                 <PurchaseButton 
+                  onClick={() => window.dispatchEvent(new CustomEvent('BUY_TITLE', { detail: { id: title.id, price: title.price } }))} 
                   disabled={owned || !canAfford}
-                  className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase border transition-all ${owned ? 'bg-indigo-600/20 border-indigo-500 text-indigo-500' : canAfford ? 'bg-white text-black border-white' : 'opacity-20 border-white/10 grayscale'}`}
-                 >
-                   {owned ? `POSSUÍ` : `🍪 ${title.price}`}
-                 </button>
+                  activeClass={owned ? 'bg-indigo-600/20 border-indigo-500 text-indigo-500' : 'bg-white text-black border-white'}
+                  label={owned ? `POSSUÍ` : `🍪 ${title.price}`}
+                 />
               </div>
             );
           })
@@ -207,9 +237,13 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
                     <span className="text-[9px] font-cartoon text-white">Capacidade: {plot.capacity} / {UPGRADE_LIMITS[plot.type]}</span>
                   </div>
                 </div>
-                <button onClick={() => onUpgradePlot(plot.id)} disabled={isMaxed || !canAfford} className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase transition-all shadow-lg border ${isMaxed ? 'bg-green-600/20 border-green-500 text-green-500' : canAfford ? 'bg-amber-600 border-amber-400 text-white active:scale-95' : 'bg-white/5 border-white/10 text-white/20'}`}>
-                  {isMaxed ? 'MÁX' : `${upgradeCost.hash > 0 ? '🍪' : '🪙'} ${upgradeCost.hash > 0 ? upgradeCost.hash : upgradeCost.coins}`}
-                </button>
+                <PurchaseButton 
+                  onClick={() => onUpgradePlot(plot.id)} 
+                  disabled={!canAfford} 
+                  isLocked={isMaxed}
+                  activeClass="bg-amber-600 border-amber-400 text-white"
+                  label={isMaxed ? 'MÁX' : <>{upgradeCost.hash > 0 ? '🍪' : '🪙'} {upgradeCost.hash > 0 ? upgradeCost.hash : upgradeCost.coins}</>}
+                />
               </div>
             );
           })

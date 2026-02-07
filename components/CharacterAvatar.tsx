@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Player } from '../types';
 import { AVATAR_OPTIONS } from '../constants';
@@ -16,23 +15,26 @@ const CharacterAvatar: React.FC<CharacterAvatarProps> = ({ player, size = 'md' }
     xl: 'w-48 h-48 rounded-[3.5rem]'
   };
 
-  // Encontra a URL do avatar selecionado
   const selectedAvatar = AVATAR_OPTIONS.find(opt => opt.id === player.avatarId) || AVATAR_OPTIONS[0];
   const avatarUrl = selectedAvatar.url;
+  
+  const isSpecial = player.activeTitle === 'deus_verde' || player.activeTitle === 'lenda_viva' || player.activeTitle === 'chefao';
+  const rimClass = isSpecial ? 'rim-mistica' : 'rim-comum';
 
   return (
-    <div className={`relative flex items-center justify-center bg-zinc-900 border-2 border-white/10 overflow-hidden shadow-2xl transition-all duration-500 ${sizeClasses[size]}`}>
-      {/* Brilho de fundo para títulos especiais */}
-      {player.activeTitle === 'deus_verde' && (
-        <div className="absolute inset-0 bg-gradient-to-t from-green-500/40 to-transparent animate-pulse z-0" />
-      )}
-      
-      {/* Personagem Principal - Limpo, sem itens por cima */}
-      <img 
-        src={avatarUrl} 
-        alt="Avatar do Jogador" 
-        className="w-full h-full object-cover relative z-10 scale-100" 
-      />
+    <div className={`selection-rim selection-active ${rimClass} ${sizeClasses[size]} bg-zinc-900 shadow-2xl transition-all duration-500`}>
+      {/* Camada de Conteúdo */}
+      <div className="absolute inset-0 z-0">
+        {player.activeTitle === 'deus_verde' && (
+          <div className="absolute inset-0 bg-gradient-to-t from-green-500/20 to-transparent animate-pulse" />
+        )}
+        
+        <img 
+          src={avatarUrl} 
+          alt="Avatar do Jogador" 
+          className="w-full h-full object-cover" 
+        />
+      </div>
     </div>
   );
 };

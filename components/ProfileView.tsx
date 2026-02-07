@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Player, Title } from '../types';
+import { Player, Title, Rarity } from '../types';
 import { LUXURY_ITEMS, TITLES, AVATAR_OPTIONS } from '../constants';
 import CharacterAvatar from './CharacterAvatar';
 
@@ -41,17 +40,19 @@ const ProfileView: React.FC<ProfileViewProps> = ({ player, onBuyLuxury, onToggle
 
   const freeThemes = LUXURY_ITEMS.filter(i => i.category === 'profile_bg' && i.price === 0);
 
-  // Itens de Gear Ativos
-  const activeGear = [
-    { label: 'Capa', item: LUXURY_ITEMS.find(i => i.id === player.activeCosmetics.cape) },
-    { label: 'Joia', item: LUXURY_ITEMS.find(i => i.id === player.activeCosmetics.jewelry) },
-    { label: 'Luxo', item: LUXURY_ITEMS.find(i => i.id === player.activeCosmetics.luxury) }
-  ].filter(g => g.item);
+  const getRarityRimClass = (rarity: Rarity) => {
+    switch(rarity) {
+      case Rarity.MISTICA: return 'rim-mistica';
+      case Rarity.LENDARIA: return 'rim-lendaria';
+      case Rarity.RARA: return 'rim-rara';
+      default: return 'rim-comum';
+    }
+  };
 
   return (
     <div className="w-full flex flex-col gap-6 animate-in slide-in-from-right duration-300">
       {/* Header do Perfil */}
-      <div className={`w-full rounded-[2.5rem] p-6 bg-gradient-to-br ${themeStyles.bg} border ${themeStyles.border} shadow-2xl relative overflow-hidden transition-all duration-700`}>
+      <div className={`w-full rounded-[2.5rem] p-6 bg-gradient-to-br ${themeStyles.bg} border ${themeStyles.border} shadow-2xl relative overflow-hidden`}>
         <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/20 to-transparent"></div>
         
         <div className="flex flex-col gap-6 relative z-10">
@@ -90,54 +91,40 @@ const ProfileView: React.FC<ProfileViewProps> = ({ player, onBuyLuxury, onToggle
                      <p className="text-xs font-cartoon text-white">{player.stats?.totalSold || 0}</p>
                   </div>
               </div>
-
-              {/* EXIBIÇÃO DE EQUIPAMENTOS ATIVOS (HUB) */}
-              {activeGear.length > 0 && (
-                <div className="flex gap-2">
-                   {activeGear.map((gear, idx) => (
-                     <div key={idx} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-1.5 flex flex-col items-center justify-center min-w-[32px] shadow-lg animate-in zoom-in duration-300">
-                        <span className="text-sm">{gear.item?.icon}</span>
-                        <span className="text-[5px] font-black uppercase text-white/40 mt-0.5">{gear.label}</span>
-                     </div>
-                   ))}
-                </div>
-              )}
             </div>
           </div>
 
           <div className="bg-black/40 backdrop-blur-2xl rounded-3xl p-3 border border-white/10">
             <p className="text-[7px] font-black uppercase text-white/40 tracking-widest mb-3 ml-1">Mudar Identidade</p>
-            <div className="flex gap-4 overflow-x-auto no-scrollbar py-1">
+            <div className="flex gap-4 overflow-x-auto no-scrollbar py-1 px-1">
               {AVATAR_OPTIONS.map(opt => {
                 const isActive = player.avatarId === opt.id;
                 return (
                   <button
                     key={opt.id}
                     onClick={() => onSetAvatar(opt.id, opt.gender)}
-                    className={`flex-shrink-0 w-14 h-14 rounded-full border-2 transition-all relative overflow-hidden group
-                      ${isActive ? 'border-white scale-110 shadow-[0_0_15px_white]' : 'border-white/5 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 active:scale-95'}
+                    className={`selection-rim flex-shrink-0 w-14 h-14 rounded-full transition-all duration-300
+                      ${isActive ? 'selection-active rim-comum' : 'opacity-40 grayscale hover:opacity-100 hover:grayscale-0'}
                     `}
                   >
-                    <img src={opt.url} className="w-full h-full object-cover" />
-                    {isActive && <div className="absolute inset-0 bg-white/10 ring-2 ring-inset ring-white" />}
+                    <img src={opt.url} className="w-full h-full object-cover rounded-full" />
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Opções de cores gratuitas do hub */}
           <div className="bg-black/40 backdrop-blur-2xl rounded-3xl p-3 border border-white/10">
             <p className="text-[7px] font-black uppercase text-white/40 tracking-widest mb-3 ml-1">Cores do Perfil (Grátis)</p>
-            <div className="flex gap-4 overflow-x-auto no-scrollbar py-1">
+            <div className="flex gap-4 overflow-x-auto no-scrollbar py-1 px-1">
               {freeThemes.map(theme => {
                 const isActive = player.activeCosmetics.profile_bg === theme.id;
                 return (
                   <button
                     key={theme.id}
                     onClick={() => onToggleCosmetic(theme.id)}
-                    className={`flex-shrink-0 w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center text-lg
-                      ${isActive ? 'border-white scale-110 shadow-[0_0_10px_white]' : 'border-white/5 hover:border-white/20 active:scale-90'}
+                    className={`selection-rim flex-shrink-0 w-10 h-10 rounded-full transition-all duration-300 flex items-center justify-center text-lg
+                      ${isActive ? 'selection-active rim-comum' : 'opacity-60 hover:opacity-100'}
                     `}
                     style={{ background: `linear-gradient(to br, ${theme.style?.bg.split(' ')[0].replace('from-', '') || '#15803d'}, ${theme.style?.bg.split(' ')[1]?.replace('to-', '') || '#064e3b'})` }}
                   >
@@ -159,7 +146,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ player, onBuyLuxury, onToggle
           <button 
             key={tab.id} 
             onClick={() => setActiveTab(tab.id as any)} 
-            className={`px-4 py-3 rounded-xl font-black text-[9px] uppercase tracking-tighter transition-all whitespace-nowrap flex-1 flex items-center justify-center gap-2 ${activeTab === tab.id ? 'bg-white text-black shadow-xl scale-[1.02]' : 'text-white/30 hover:bg-white/5'}`}
+            className={`px-4 py-3 rounded-xl font-black text-[9px] uppercase tracking-tighter transition-all whitespace-nowrap flex-1 flex items-center justify-center gap-2 ${activeTab === tab.id ? 'bg-white text-black shadow-xl' : 'text-white/30 hover:bg-white/5'}`}
           >
             {tab.icon} {tab.label}
           </button>
@@ -173,7 +160,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ player, onBuyLuxury, onToggle
           const isUnlockable = title.type === 'reputation';
           
           return (
-            <div key={title.id} className={`bg-zinc-900/60 p-4 rounded-3xl border transition-all flex justify-between items-center ${isActive ? 'border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.3)]' : 'border-white/5'}`}>
+            <div key={title.id} className={`selection-rim bg-zinc-900/60 p-4 rounded-3xl border transition-all flex justify-between items-center ${isActive ? 'selection-active rim-rara border-indigo-500' : 'border-white/5'}`}>
               <div className="flex-1 pr-4">
                 <h4 className={`text-[10px] font-black uppercase ${owned ? 'text-white' : 'text-white/40'}`}>{title.name}</h4>
                 <p className="text-[7px] text-zinc-500 font-bold uppercase mt-1 tracking-wider">
@@ -183,7 +170,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ player, onBuyLuxury, onToggle
               {owned ? (
                 <button 
                   onClick={() => onSetTitle(title.id)} 
-                  className={`px-4 py-2 rounded-xl text-[8px] font-black uppercase min-w-[70px] ${isActive ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white/10 text-white/40 border border-white/5 hover:bg-white/20'}`}
+                  className={`px-4 py-2 rounded-xl text-[8px] font-black uppercase min-w-[70px] ${isActive ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white/10 text-white/40 border border-white/5'}`}
                 >
                   {isActive ? 'Ativo' : 'Usar'}
                 </button>
@@ -207,14 +194,13 @@ const ProfileView: React.FC<ProfileViewProps> = ({ player, onBuyLuxury, onToggle
                 {player.ownedLuxuryItems.filter(id => {
                     const item = LUXURY_ITEMS.find(i => i.id === id);
                     const isStyle = item?.category === 'hud_theme' || item?.category === 'profile_bg';
-                    // No tab de estilo, só mostrar se for tema pago (preço > 0)
                     if (activeTab === 'owned_themes' && item?.price === 0) return false;
                     return activeTab === 'owned_items' ? !isStyle : isStyle;
                 }).map(itemId => {
                     const item = LUXURY_ITEMS.find(i => i.id === itemId)!;
                     const isActive = Object.values(player.activeCosmetics).includes(itemId);
                     return (
-                        <button key={itemId} onClick={() => onToggleCosmetic(itemId)} className={`p-5 rounded-[2.5rem] border flex flex-col items-center gap-3 transition-all ${isActive ? 'bg-white/10 border-white ring-4 ring-white/5 scale-95 shadow-2xl' : 'bg-zinc-900/40 border-white/5 active:scale-90 hover:bg-zinc-900/60'}`}>
+                        <button key={itemId} onClick={() => onToggleCosmetic(itemId)} className={`selection-rim p-5 rounded-[2.5rem] flex flex-col items-center gap-3 transition-all ${isActive ? `selection-active ${getRarityRimClass(item.rarity)} bg-white/5` : 'bg-zinc-900/40 border border-white/5 opacity-60'}`}>
                             <span className="text-4xl filter drop-shadow-md">{item.icon}</span>
                             <div className="text-center">
                                 <span className="text-[8px] font-black uppercase truncate w-full block text-white/90">{item.name}</span>

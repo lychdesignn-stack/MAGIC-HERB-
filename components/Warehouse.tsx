@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Player } from '../types';
 import { SEEDS, CONSUMABLES } from '../constants';
@@ -39,12 +38,9 @@ const Warehouse: React.FC<WarehouseProps> = ({ player, onBack }) => {
           <span style={{ color: color }}>{icon}</span>
         </div>
         <div className="flex-1">
-          <h4 className="font-bold text-sm text-white/90">{name}</h4>
+          <h4 className="font-bold text-sm text-white/90">{name} x{quantity}</h4>
           <p className="text-[10px] text-white/40 uppercase tracking-widest">{type}</p>
           {subText && <p className="text-[8px] text-green-400 font-bold uppercase mt-1">{subText}</p>}
-        </div>
-        <div className="bg-purple-600/20 text-purple-400 px-3 py-1 rounded-full text-xs font-bold border border-purple-500/20">
-          x{quantity}
         </div>
       </div>
     );
