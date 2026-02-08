@@ -188,8 +188,9 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
                    ) : (
                      <p className="text-[8px] text-white/30 leading-tight mt-1">{item.description}</p>
                    )}
-                   <div className="mt-2 flex items-center gap-1.5">
-                      <span className="text-[8px] font-black text-green-500 uppercase">+{Math.round(item.harvestBonus * 100)}% Colheita</span>
+                   <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                      {item.harvestBonus > 0 && <span className="text-[8px] font-black text-green-500 uppercase">+{Math.round(item.harvestBonus * 100)}% Colheita</span>}
+                      {item.growthSpeedBonus && <span className="text-[8px] font-black text-blue-400 uppercase">Velocidade +{Math.round(item.growthSpeedBonus * 100)}%</span>}
                       <span className="text-[6px] font-black text-zinc-500 uppercase tracking-widest">{item.category.replace('_', ' ')}</span>
                    </div>
                  </div>
@@ -212,6 +213,11 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
                  <div className="w-14 h-14 rounded-2xl bg-zinc-800 border border-white/10 flex items-center justify-center text-2xl">🏷️</div>
                  <div className="flex-1">
                    <h3 className="font-black text-xs text-white uppercase">{title.name}</h3>
+                   {title.speedBonus && (
+                     <p className="text-[9px] text-green-400 font-black uppercase mt-0.5 tracking-tight">
+                       Velocidade: +{Math.round(title.speedBonus * 100)}%
+                     </p>
+                   )}
                    <p className="text-[8px] text-white/30 mt-1">Prestígio Social</p>
                  </div>
                  <PurchaseButton 

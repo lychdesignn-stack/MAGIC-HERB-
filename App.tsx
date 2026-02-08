@@ -86,22 +86,20 @@ const App: React.FC = () => {
     return "CÓDIGO INVÁLIDO";
   };
 
-  // REQUISITOS DE DESBLOQUEIO (Cap 150 Rep)
   useEffect(() => {
     const { totalReputation, level } = player;
     const newUnlocked: Rarity[] = [Rarity.COMUM_A];
 
-    if (totalReputation >= 20 && level >= 2) newUnlocked.push(Rarity.COMUM_B);
-    if (totalReputation >= 40 && level >= 4) newUnlocked.push(Rarity.RARA);
-    if (totalReputation >= 70 && level >= 7) newUnlocked.push(Rarity.LENDARIA);
-    if (totalReputation >= 110 && level >= 12) newUnlocked.push(Rarity.MISTICA);
+    if (totalReputation >= 10 && level >= 2) newUnlocked.push(Rarity.COMUM_B);
+    if (totalReputation >= 35 && level >= 5) newUnlocked.push(Rarity.RARA);
+    if (totalReputation >= 70 && level >= 10) newUnlocked.push(Rarity.LENDARIA);
+    if (totalReputation >= 100 && level >= 15) newUnlocked.push(Rarity.MISTICA);
 
     if (JSON.stringify(newUnlocked) !== JSON.stringify(player.unlockedRarities)) {
       setPlayer(prev => ({ ...prev, unlockedRarities: newUnlocked }));
     }
   }, [player.totalReputation, player.level]);
 
-  // PROGRESSÃO DE NÍVEL (Fórmula: base * (1.4 + nível * 0.15))
   useEffect(() => {
     const xpNeeded = 100 * (1.4 + player.level * 0.15);
     if (player.experience >= xpNeeded) {
@@ -143,7 +141,6 @@ const App: React.FC = () => {
     }
   }, [player.experience, player.level]);
 
-  // PROGRESSÃO DE REPUTAÇÃO (Fórmula: 50 * (1.6 + level * 0.25))
   useEffect(() => {
     const repXPNeeded = 50 * (1.6 + player.totalReputation * 0.25);
     if (player.totalReputationXP >= repXPNeeded) {
@@ -163,11 +160,29 @@ const App: React.FC = () => {
     const hidroCount = player.inventory['hidro_boost'] || 0;
     const chronoCount = player.inventory['chrono_trigger'] || 0;
 
+    // Multiplicador de velocidade dos temas equipados
+    let themeSpeedMult = 0;
+    const activeHudTheme = player.activeCosmetics.hud_theme ? LUXURY_ITEMS.find(i => i.id === player.activeCosmetics.hud_theme) : null;
+    const activeProfileBg = player.activeCosmetics.profile_bg ? LUXURY_ITEMS.find(i => i.id === player.activeCosmetics.profile_bg) : null;
+    
+    if (activeHudTheme?.growthSpeedBonus) {
+      themeSpeedMult = activeHudTheme.growthSpeedBonus;
+    } else if (activeProfileBg?.growthSpeedBonus) {
+      themeSpeedMult = activeProfileBg.growthSpeedBonus;
+    }
+
+    // NOVO: Multiplicador de velocidade do Título equipado
+    const activeTitle = TITLES.find(t => t.id === player.activeTitle);
+    const titleSpeedMult = activeTitle?.speedBonus || 0;
+
     return {
       extraBuds: fertCount * 0.5,
-      growthSpeedMultiplier: 1 + (hidroCount * 0.10) + (chronoCount * 0.25)
+      // Fórmula estendida: velocidadeBase × (1 + bonusConsumíveis) × (1 + bonusTema) × (1 + bonusTitulo)
+      growthSpeedMultiplier: (1 + (hidroCount * 0.10) + (chronoCount * 0.25)) * (1 + themeSpeedMult) * (1 + titleSpeedMult),
+      titleSpeedBonus: titleSpeedMult,
+      activeTitleName: activeTitle?.name || 'Nenhum'
     };
-  }, [player.inventory]);
+  }, [player.inventory, player.activeCosmetics, player.activeTitle]);
 
   const calculateTotalBonus = useCallback(() => {
     let bonus = 0;
@@ -344,13 +359,13 @@ const App: React.FC = () => {
 
   const refreshOffers = useCallback(() => {
     setLastOfferReset(Date.now());
-    const newOffers: Offer[] = [];
+    const offersArray: Offer[] = [];
     const offerCount = Math.floor(Math.random() * 3) + MIN_NPC_OFFERS; 
     for(let i=0; i<offerCount; i++) {
       const o = generateRandomOffer(player);
-      if(o) newOffers.push(o);
+      if(o) offersArray.push(o);
     }
-    setOffers(newOffers);
+    setOffers(offersArray);
   }, [player, generateRandomOffer]);
 
   useEffect(() => {
@@ -401,12 +416,7 @@ const App: React.FC = () => {
       if (Date.now() - lastMapReset > MAP_OFFER_RESET_INTERVAL) refreshMapOffers();
     }, 1000);
     return () => clearInterval(tick);
-  }, [lastOfferReset, lastMapReset, refreshOffers, refreshMapOffers, passiveBonuses.growthSpeedMultiplier]);
-
-  const calculateReputationGain = (base: number, level: number) => {
-    const multiplier = 0.4; 
-    return Math.max(1, Math.floor(base * (1 / (1 + level / 8)) * multiplier));
-  };
+  }, [lastOfferReset, lastMapReset, refreshOffers, refreshMapOffers, player.inventory, passiveBonuses.growthSpeedMultiplier]);
 
   const handleMapSale = (offerId: string, wasBusted: boolean) => {
     const offer = mapOffers.find(o => o.id === offerId);
@@ -458,7 +468,7 @@ const App: React.FC = () => {
     if (!plot || !plot.seedId || !plot.isPruned) return;
     const budId = `${plot.seedId}_bud`;
     const bonus = calculateTotalBonus();
-    const amount = Math.ceil((plot.capacity + (plot.isFertilized ? 1 : 0) + passiveBonuses.extraBuds) * (1 + bonus)); 
+    const amount = Math.ceil((plot.capacity + (plot.isFertilized ? 1 : 0) + (player.inventory['fertilizante_bio'] || 0) * 0.5) * (1 + bonus)); 
     setPlayer(prev => ({ ...prev, inventory: { ...prev.inventory, [budId]: (prev.inventory[budId] || 0) + amount } }));
     setPlots(prev => prev.map(p => p.id === plotId ? { ...p, seedId: null, plantedAt: null, accumulatedGrowth: 0, isWatered: false, isLightOn: false, isPruned: false, isFertilized: false } : p));
   };
@@ -596,7 +606,20 @@ const App: React.FC = () => {
             setTimeout(() => setNotification(null), 2000);
           }
         }} onBack={() => setActiveScreen('farm')} />}
-        {activeScreen === 'profile' && <ProfileView player={player} onBuyLuxury={handleBuyLuxury} onToggleCosmetic={handleToggleCosmetic} onSetAvatar={(a, g) => setPlayer(p => ({...p, avatarId: a, gender: g}))} onBuyTitle={handleBuyTitle} onSetTitle={(t) => setPlayer(p => ({...p, activeTitle: t}))} onUpdateName={handleUpdateName} onBack={() => setActiveScreen('farm')} />}
+        {activeScreen === 'profile' && (
+          <ProfileView 
+            player={player} 
+            totalBonus={calculateTotalBonus()} 
+            passiveBonuses={passiveBonuses}
+            onBuyLuxury={handleBuyLuxury} 
+            onToggleCosmetic={handleToggleCosmetic} 
+            onSetAvatar={(a, g) => setPlayer(p => ({...p, avatarId: a, gender: g}))} 
+            onBuyTitle={handleBuyTitle} 
+            onSetTitle={(t) => setPlayer(p => ({...p, activeTitle: t}))} 
+            onUpdateName={handleUpdateName} 
+            onBack={() => setActiveScreen('farm')} 
+          />
+        )}
         {activeScreen === 'map' && <CityMap player={player} mapOffers={mapOffers} onSale={handleMapSale} onBack={() => setActiveScreen('farm')} />}
       </main>
       <BottomNav activeScreen={activeScreen === 'map' ? 'farm' : activeScreen} onNavigate={setActiveScreen} />

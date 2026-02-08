@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useMemo, useState } from 'react';
 import { NPCS, SEEDS, RARITY_DISPLAY } from '../constants';
 import { Player, Offer, Rarity, NPC } from '../types';
@@ -25,20 +24,21 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBu
     const rarity = npc.rarity || Rarity.COMUM_A;
     
     if (rarity === Rarity.COMUM_A) return true;
-    if (rarity === Rarity.COMUM_B) return totalReputation >= 18 && currentLevel >= 3;
-    if (rarity === Rarity.RARA) return totalReputation >= 75 && currentLevel >= 7;
-    if (rarity === Rarity.LENDARIA) return totalReputation >= 180 && currentLevel >= 12;
-    if (rarity === Rarity.MISTICA) return totalReputation >= 450 && currentLevel >= 23;
+    // REQUISITOS AJUSTADOS: Redução de 50% e Caps aplicados (100 Rep / 15 LVL)
+    if (rarity === Rarity.COMUM_B) return totalReputation >= 10 && currentLevel >= 2;
+    if (rarity === Rarity.RARA) return totalReputation >= 35 && currentLevel >= 5;
+    if (rarity === Rarity.LENDARIA) return totalReputation >= 70 && currentLevel >= 10;
+    if (rarity === Rarity.MISTICA) return totalReputation >= 100 && currentLevel >= 15;
     
     return true;
   };
 
   const getUnlockRequirementLabel = (npc: NPC) => {
     const rarity = npc.rarity || Rarity.COMUM_A;
-    if (rarity === Rarity.COMUM_B) return "REP 18 | LVL 3";
-    if (rarity === Rarity.RARA) return "REP 75 | LVL 7";
-    if (rarity === Rarity.LENDARIA) return "REP 180 | LVL 12";
-    if (rarity === Rarity.MISTICA) return "REP 450 | LVL 23";
+    if (rarity === Rarity.COMUM_B) return "REP 10 | LVL 2";
+    if (rarity === Rarity.RARA) return "REP 35 | LVL 5";
+    if (rarity === Rarity.LENDARIA) return "REP 70 | LVL 10";
+    if (rarity === Rarity.MISTICA) return "REP 100 | LVL 15";
     return "Acesso Livre";
   };
 

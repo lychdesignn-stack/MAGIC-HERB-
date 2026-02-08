@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { Player } from '../types';
-import { LUXURY_ITEMS } from '../constants';
+import { LUXURY_ITEMS, CONSUMABLES } from '../constants';
 import CharacterAvatar from './CharacterAvatar';
 
 interface HUDProps {
@@ -12,6 +13,9 @@ interface HUDProps {
   passiveBonuses?: {
     extraBuds: number;
     growthSpeedMultiplier: number;
+    themeSpeedBonus?: number;
+    titleSpeedBonus?: number;
+    activeTitleName?: string;
   };
   onActivateCode: (code: string) => string;
 }
@@ -22,21 +26,21 @@ const HUD: React.FC<HUDProps> = ({
   onOpenProfile, 
   onOpenMap, 
   totalBonus = 0, 
-  passiveBonuses = { extraBuds: 0, growthSpeedMultiplier: 1 },
+  passiveBonuses = { extraBuds: 0, growthSpeedMultiplier: 1, themeSpeedBonus: 0, titleSpeedBonus: 0, activeTitleName: 'Nenhum' },
   onActivateCode
 }) => {
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [code, setCode] = useState('');
   const [codeResult, setCodeResult] = useState<string | null>(null);
 
-  const activeThemeId = player.activeCosmetics.hud_theme;
+  const activeThemeId = player.activeCosmetics.hud_theme || player.activeCosmetics.profile_bg;
   const activeTheme = LUXURY_ITEMS.find(i => i.id === activeThemeId);
   
   const themeStyles = activeTheme?.style || {
     bg: 'bg-black/40',
     border: 'border-white/5',
     text: 'text-blue-400',
-    accent: 'bg-white/10',
+    accent: '#ffffff',
     effectClass: ''
   };
 
@@ -56,19 +60,23 @@ const HUD: React.FC<HUDProps> = ({
     }, 2000);
   };
 
-  // Cálculo de XP necessário para Nível de Jogador
   const playerXPNeeded = 100 * (1.4 + player.level * 0.15);
   const playerXPProgress = (player.experience / playerXPNeeded) * 100;
 
-  // Cálculo de XP necessário para Nível de Reputação
   const repXPNeeded = 50 * (1.6 + player.totalReputation * 0.25);
   const repXPProgress = (player.totalReputationXP / repXPNeeded) * 100;
 
   return (
-    <div className={`w-full ${themeStyles.bg} backdrop-blur-xl border-b ${themeStyles.border} p-3 flex flex-col gap-2 z-50 transition-all duration-700 ${themeStyles.effectClass || ''}`}>
+    <div 
+      className={`w-full ${themeStyles.bg} backdrop-blur-xl border-b ${themeStyles.border} p-3 flex flex-col gap-2 z-50 transition-all duration-700 ${themeStyles.effectClass || ''}`}
+      style={{
+        '--theme-accent-color': themeStyles.accent,
+        '--theme-glow-color': activeTheme?.style?.glowColor || 'rgba(255,255,255,0.1)'
+      } as any}
+    >
       {/* Sistema de Códigos Overlay */}
       {showCodeInput && (
-        <div className="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center p-6 backdrop-blur-md">
+        <div className="fixed inset-0 z-[1000] bg-black/80 flex items-center justify-center p-6 backdrop-blur-md">
            <div className="bg-zinc-900 border border-white/10 w-full max-w-sm rounded-[2rem] p-6 shadow-2xl flex flex-col gap-4 animate-in zoom-in duration-300">
               <h3 className="font-cartoon text-lg text-center">Configurações Estelares</h3>
               {codeResult ? (
@@ -120,11 +128,11 @@ const HUD: React.FC<HUDProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className={`px-2 py-0.5 rounded-lg border flex items-center gap-1 min-w-[50px] ${themeStyles.bg} ${themeStyles.border}`}>
+            <div className={`px-2 py-0.5 rounded-lg border flex items-center gap-1 min-w-[50px] ${themeStyles.bg} ${themeStyles.border} shadow-inner`}>
               <span className="text-[10px]">🪙</span>
               <span className={`font-cartoon text-[9px] ${themeStyles.text}`}>{Math.floor(player.coins)}</span>
             </div>
-            <div className={`px-2 py-0.5 rounded-lg border flex items-center gap-1 min-w-[50px] ${themeStyles.bg} ${themeStyles.border}`}>
+            <div className={`px-2 py-0.5 rounded-lg border flex items-center gap-1 min-w-[50px] ${themeStyles.bg} ${themeStyles.border} shadow-inner`}>
               <span className="text-[10px]">🍪</span>
               <span className={`font-cartoon text-[9px] ${themeStyles.text}`}>{Math.floor(player.hashCoins)}</span>
             </div>
@@ -155,8 +163,10 @@ const HUD: React.FC<HUDProps> = ({
         </div>
       </div>
 
-      {/* Linha de Status: Bônus Ativos */}
-      <div className="flex items-center gap-3 bg-black/20 rounded-xl px-2 py-1 border border-white/5 overflow-x-auto no-scrollbar">
+      {/* Linha de Status: Bônus Ativos (Apenas Visual) */}
+      <div 
+        className="flex items-center gap-3 bg-black/20 rounded-xl px-2 py-1 border border-white/5 overflow-x-auto no-scrollbar shadow-inner"
+      >
         <span className="text-[7px] font-black uppercase text-white/30 tracking-widest border-r border-white/10 pr-2 whitespace-nowrap">Status</span>
         
         <div className="flex items-center gap-1 whitespace-nowrap group">
@@ -168,6 +178,20 @@ const HUD: React.FC<HUDProps> = ({
            <span className="text-xs">🧪</span>
            <span className="text-[7px] font-black text-green-400 uppercase">Bonus: +{passiveBonuses.extraBuds}</span>
         </div>
+
+        {passiveBonuses.titleSpeedBonus ? (
+           <div className="flex items-center gap-1 whitespace-nowrap group">
+              <span className="text-xs">🏷️</span>
+              <span className={`text-[7px] font-black uppercase text-amber-500`}>Title: +{Math.round(passiveBonuses.titleSpeedBonus * 100)}%</span>
+           </div>
+        ) : null}
+
+        {activeTheme?.growthSpeedBonus && (
+           <div className="flex items-center gap-1 whitespace-nowrap group">
+              <span className="text-xs">🚀</span>
+              <span className={`text-[7px] font-black uppercase ${themeStyles.text}`}>Buff: +{Math.round(activeTheme.growthSpeedBonus * 100)}%</span>
+           </div>
+        )}
 
         {currentEvent && (
           <div className="flex items-center gap-1.5 whitespace-nowrap ml-auto">

@@ -26,6 +26,7 @@ export interface Title {
   requirement: string;
   price?: number;
   type: 'reputation' | 'purchasable';
+  speedBonus?: number;
 }
 
 export interface Seed {
@@ -61,39 +62,6 @@ export interface Offer {
   price: number;
   currency: 'coins' | 'hashCoins';
   reputationAward: number;
-}
-
-export interface MapOffer {
-  id: string;
-  territoryId: string;
-  itemId: string;
-  quantity: number;
-  price: number;
-}
-
-export interface LuxuryItem {
-  id: string;
-  name: string;
-  category: 'cape' | 'jewelry' | 'luxury' | 'hud_theme' | 'profile_bg';
-  rarity: Rarity;
-  price: number;
-  currency: 'coins' | 'hashCoins';
-  icon: string;
-  description: string;
-  harvestBonus: number;
-  unlockCondition?: {
-    type: 'level' | 'reputation' | 'stats';
-    value: number;
-    npcId?: string;
-    label: string;
-  };
-  style?: {
-    bg: string;
-    border: string;
-    text: string;
-    accent: string;
-    effectClass?: string;
-  };
 }
 
 export interface Player {
@@ -143,4 +111,39 @@ export interface NPC {
   multiplier: number;
   rarityRequired: Rarity | null;
   rarity?: Rarity;
+}
+
+export interface MapOffer {
+  id: string;
+  territoryId: string;
+  itemId: string;
+  quantity: number;
+  price: number;
+}
+
+export interface LuxuryItem {
+  id: string;
+  name: string;
+  category: 'cape' | 'jewelry' | 'luxury' | 'hud_theme' | 'profile_bg';
+  rarity: Rarity;
+  price: number;
+  currency: 'coins' | 'hashCoins';
+  icon: string;
+  description: string;
+  harvestBonus: number;
+  growthSpeedBonus?: number;
+  unlockCondition?: {
+    type: 'level' | 'reputation' | 'stats';
+    value: number;
+    npcId?: string;
+    label: string;
+  };
+  style?: {
+    bg: string;
+    border: string;
+    text: string;
+    accent: string;
+    effectClass?: string;
+    glowColor?: string;
+  };
 }

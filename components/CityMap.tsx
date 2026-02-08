@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Player, Territory, MapOffer, Rarity } from '../types';
 import { TERRITORIES, SEEDS } from '../constants';
@@ -21,15 +20,15 @@ const CityMap: React.FC<CityMapProps> = ({ player, mapOffers, onSale, onBack }) 
     const level = player.level;
     const rarity = territory.requiredRarity;
     
-    // REQUISITOS AJUSTADOS (Max 150 Rep)
+    // REQUISITOS AJUSTADOS (Max 100 Rep / 15 LVL)
     let requiredRep = 0;
     let requiredLv = 0;
 
     if (rarity === Rarity.COMUM_A) { requiredRep = 0; requiredLv = 0; }
-    else if (rarity === Rarity.COMUM_B) { requiredRep = 20; requiredLv = 2; }
-    else if (rarity === Rarity.RARA) { requiredRep = 40; requiredLv = 4; }
-    else if (rarity === Rarity.LENDARIA) { requiredRep = 70; requiredLv = 7; }
-    else if (rarity === Rarity.MISTICA) { requiredRep = 110; requiredLv = 12; }
+    else if (rarity === Rarity.COMUM_B) { requiredRep = 10; requiredLv = 2; }
+    else if (rarity === Rarity.RARA) { requiredRep = 35; requiredLv = 5; }
+    else if (rarity === Rarity.LENDARIA) { requiredRep = 70; requiredLv = 10; }
+    else if (rarity === Rarity.MISTICA) { requiredRep = 100; requiredLv = 15; }
 
     const isLocked = totalRep < requiredRep || level < requiredLv;
     

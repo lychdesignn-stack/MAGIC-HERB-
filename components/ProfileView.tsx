@@ -1,10 +1,19 @@
+
 import React, { useState } from 'react';
 import { Player, Title, Rarity } from '../types';
-import { LUXURY_ITEMS, TITLES, AVATAR_OPTIONS } from '../constants';
+import { LUXURY_ITEMS, TITLES, AVATAR_OPTIONS, CONSUMABLES } from '../constants';
 import CharacterAvatar from './CharacterAvatar';
 
 interface ProfileViewProps {
   player: Player;
+  totalBonus: number;
+  passiveBonuses: {
+    extraBuds: number;
+    growthSpeedMultiplier: number;
+    themeSpeedBonus?: number;
+    titleSpeedBonus?: number;
+    activeTitleName?: string;
+  };
   onBuyLuxury: (itemId: string) => void;
   onToggleCosmetic: (itemId: string) => void;
   onSetAvatar: (avatarId: string, gender: 'male' | 'female') => void;
@@ -14,13 +23,25 @@ interface ProfileViewProps {
   onBack: () => void;
 }
 
-const ProfileView: React.FC<ProfileViewProps> = ({ player, onBuyLuxury, onToggleCosmetic, onSetAvatar, onBuyTitle, onSetTitle, onUpdateName, onBack }) => {
+const ProfileView: React.FC<ProfileViewProps> = ({ 
+  player, 
+  totalBonus, 
+  passiveBonuses, 
+  onBuyLuxury, 
+  onToggleCosmetic, 
+  onSetAvatar, 
+  onBuyTitle, 
+  onSetTitle, 
+  onUpdateName, 
+  onBack 
+}) => {
   const [activeTab, setActiveTab] = useState<'titles' | 'owned_items' | 'owned_themes'>('titles');
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(player.name);
 
   const activeProfileBgId = player.activeCosmetics.profile_bg;
   const activeTheme = LUXURY_ITEMS.find(i => i.id === activeProfileBgId);
+  const activeHudTheme = player.activeCosmetics.hud_theme ? LUXURY_ITEMS.find(i => i.id === player.activeCosmetics.hud_theme) : null;
   
   const themeStyles = activeTheme?.style || {
     bg: 'from-green-800 to-green-950',
@@ -134,6 +155,60 @@ const ProfileView: React.FC<ProfileViewProps> = ({ player, onBuyLuxury, onToggle
               })}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* SEÇÃO FIXA: STATUS DO JOGADOR */}
+      <div className="bg-zinc-900/60 p-5 rounded-[2rem] border border-white/5 flex flex-col gap-4 shadow-xl">
+        <div className="flex items-center justify-between border-b border-white/5 pb-2">
+          <h3 className="font-cartoon text-sm text-white uppercase tracking-wider">Status da Estufa</h3>
+          <span className="text-[8px] text-indigo-400 font-black uppercase tracking-widest">Multiplicadores Ativos</span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {/* Bônus de Velocidade */}
+          <div className="bg-indigo-600/10 p-3 rounded-2xl border border-indigo-500/20 flex flex-col items-center gap-1">
+            <span className="text-2xl">⚡</span>
+            <p className="text-[7px] text-indigo-400 font-black uppercase">Velocidade</p>
+            <p className="font-cartoon text-base text-white">x{passiveBonuses.growthSpeedMultiplier.toFixed(2)}</p>
+          </div>
+
+          {/* Bônus de Colheita */}
+          <div className="bg-green-600/10 p-3 rounded-2xl border border-green-500/20 flex flex-col items-center gap-1">
+            <span className="text-2xl">🌿</span>
+            <p className="text-[7px] text-green-400 font-black uppercase">Colheita</p>
+            <p className="font-cartoon text-base text-white">+{Math.round(totalBonus * 100)}%</p>
+          </div>
+        </div>
+
+        {/* Detalhes Adicionais em Linha */}
+        <div className="grid grid-cols-3 gap-2">
+          <div className="bg-white/5 p-2 rounded-xl flex flex-col items-center text-center">
+            <p className="text-[6px] text-zinc-500 font-black uppercase">Extra Buds</p>
+            <p className="text-[10px] font-black text-white">+{passiveBonuses.extraBuds}</p>
+          </div>
+          <div className="bg-white/5 p-2 rounded-xl flex flex-col items-center text-center overflow-hidden">
+            <p className="text-[6px] text-zinc-500 font-black uppercase">Título</p>
+            <p className="text-[8px] font-black text-white truncate w-full">{passiveBonuses.activeTitleName}</p>
+          </div>
+          <div className="bg-white/5 p-2 rounded-xl flex flex-col items-center text-center overflow-hidden">
+            <p className="text-[6px] text-zinc-500 font-black uppercase">Tema</p>
+            <p className="text-[8px] font-black text-white truncate w-full">{activeHudTheme?.name || activeTheme?.name || 'Padrão'}</p>
+          </div>
+        </div>
+
+        {/* Buffs de Consumíveis Ativos */}
+        <div className="flex flex-wrap gap-2 justify-center pt-1">
+          {CONSUMABLES.map(item => {
+            const count = player.inventory[item.id] || 0;
+            if (count === 0) return null;
+            return (
+              <div key={item.id} className="flex items-center gap-1 bg-black/40 px-2 py-1 rounded-full border border-white/5" title={item.name}>
+                <span className="text-[10px]">{item.icon}</span>
+                <span className="text-[7px] font-black text-amber-500 uppercase">Lv.{count}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
 

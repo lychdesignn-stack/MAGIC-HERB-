@@ -1,4 +1,3 @@
-
 import { Seed, Rarity, NPC, LuxuryItem, Title, Territory, ConsumableItem } from './types';
 
 export const RARITY_DISPLAY: Record<Rarity, string> = {
@@ -27,32 +26,39 @@ export const AVATAR_OPTIONS = [
 ];
 
 export const TITLES: Title[] = [
-  { id: 'novato', name: 'Fazendeiro Novato', requirement: 'Nível Inicial', type: 'reputation' },
-  { id: 'truta_local', name: 'Truta da Quebrada', requirement: '100 Reputação', type: 'reputation' },
-  { id: 'maos_de_terra', name: 'Mãos de Terra', requirement: '50 Plantas Plantadas', type: 'reputation' },
-  { id: 'dedo_verde', name: 'Dedo Verde', requirement: '200 Plantas Plantadas', type: 'reputation' },
-  { id: 'influencer', name: 'Influencer de Strain', requirement: 'Comprável', price: 100, type: 'purchasable' },
-  { id: 'visionario', name: 'Visionário do Hash', requirement: 'Comprável', price: 500, type: 'purchasable' },
-  { id: 'chefao', name: 'Chefão da Estufa', requirement: 'Comprável', price: 2000, type: 'purchasable' },
-  { id: 'lenda_viva', name: 'Lenda Viva', requirement: 'Comprável', price: 10000, type: 'purchasable' },
+  { id: 'novato', name: 'Fazendeiro Novato', requirement: 'Nível Inicial', type: 'reputation', speedBonus: 0.01 },
+  { id: 'truta_local', name: 'Truta da Quebrada', requirement: '100 Reputação', type: 'reputation', speedBonus: 0.01 },
+  { id: 'maos_de_terra', name: 'Mãos de Terra', requirement: '50 Plantas Plantadas', type: 'reputation', speedBonus: 0.01 },
+  { id: 'dedo_verde', name: 'Dedo Verde', requirement: '200 Plantas Plantadas', type: 'reputation', speedBonus: 0.03 },
+  { id: 'influencer', name: 'Influencer de Strain', requirement: 'Comprável', price: 100, type: 'purchasable', speedBonus: 0.03 },
+  { id: 'visionario', name: 'Visionário do Hash', requirement: 'Comprável', price: 500, type: 'purchasable', speedBonus: 0.06 },
+  { id: 'chefao', name: 'Chefão da Estufa', requirement: 'Comprável', price: 2000, type: 'purchasable', speedBonus: 0.06 },
+  { id: 'lenda_viva', name: 'Lenda Viva', requirement: 'Comprável', price: 10000, type: 'purchasable', speedBonus: 0.10 },
+  
+  // NOVOS TÍTULOS HIPPIE/NATUREZA
+  { id: 'filho_sol', name: 'Filho do Sol', requirement: 'Comprável', price: 150, type: 'purchasable', speedBonus: 0.01 },
+  { id: 'espirito_verde', name: 'Espírito Verde', requirement: 'Comprável', price: 250, type: 'purchasable', speedBonus: 0.01 },
+  { id: 'vibe_natural', name: 'Vibe Natural', requirement: 'Comprável', price: 800, type: 'purchasable', speedBonus: 0.03 },
+  { id: 'guardiao_mata', name: 'Guardião da Mata', requirement: 'Comprável', price: 1200, type: 'purchasable', speedBonus: 0.03 },
+  { id: 'xama_folha', name: 'Xamã da Folha', requirement: 'Comprável', price: 4000, type: 'purchasable', speedBonus: 0.06 },
+  { id: 'mestre_brisa', name: 'Mestre da Brisa', requirement: 'Comprável', price: 6000, type: 'purchasable', speedBonus: 0.06 },
+  { id: 'sabio_incenso', name: 'Sábio do Incenso', requirement: 'Comprável', price: 8000, type: 'purchasable', speedBonus: 0.06 },
+  { id: 'profeta_paz', name: 'Profeta da Paz', requirement: 'Comprável', price: 20000, type: 'purchasable', speedBonus: 0.10 },
+  { id: 'alma_cosmica', name: 'Alma Cósmica', requirement: 'Comprável', price: 35000, type: 'purchasable', speedBonus: 0.10 },
+  { id: 'lenda_verde_suprema', name: 'Lenda Verde Suprema', requirement: 'Comprável', price: 75000, type: 'purchasable', speedBonus: 0.10 },
 ];
 
 export const SEEDS: Seed[] = [
-  // Comum I
   { id: 'kush_comum', name: 'Green Kush', rarity: Rarity.COMUM_A, growthTime: 15, baseValue: 50, info: "Resistente e ultra rápida.", color: '#22c55e', glowColor: 'rgba(34, 197, 94, 0.4)' },
   { id: 'lemon_skunk', name: 'Lemon Skunk', rarity: Rarity.COMUM_A, growthTime: 25, baseValue: 90, info: "Cítrica e revigorante.", color: '#facc15', glowColor: 'rgba(250, 204, 21, 0.4)' },
   { id: 'sour_diesel', name: 'Sour Diesel', rarity: Rarity.COMUM_A, growthTime: 40, baseValue: 160, info: "Energia pura.", color: '#a3e635', glowColor: 'rgba(163, 230, 53, 0.4)' },
   { id: 'blueberry_muffin', name: 'Blueberry Muffin', rarity: Rarity.COMUM_A, growthTime: 60, baseValue: 250, info: "Cheiro de padaria.", color: '#3b82f6', glowColor: 'rgba(59, 130, 246, 0.4)' },
   { id: 'pineapple_chunk', name: 'Pineapple Chunk', rarity: Rarity.COMUM_A, growthTime: 80, baseValue: 380, info: "Tropical.", color: '#fbbf24', glowColor: 'rgba(251, 191, 36, 0.4)' },
-
-  // Comum II
   { id: 'thai_stick', name: 'Thai Stick', rarity: Rarity.COMUM_B, growthTime: 100, baseValue: 520, info: "Clássico oriental.", color: '#d97706', glowColor: 'rgba(217, 119, 6, 0.3)' },
   { id: 'panama_red', name: 'Panama Red', rarity: Rarity.COMUM_B, growthTime: 120, baseValue: 680, info: "Vermelho vibrante.", color: '#ef4444', glowColor: 'rgba(239, 68, 68, 0.3)' },
   { id: 'acapulco_gold', name: 'Acapulco Gold', rarity: Rarity.COMUM_B, growthTime: 140, baseValue: 850, info: "Ouro mexicano.", color: '#eab308', glowColor: 'rgba(234, 179, 8, 0.3)' },
   { id: 'minty_breeze', name: 'Minty Breeze', rarity: Rarity.COMUM_B, growthTime: 160, baseValue: 1050, info: "Refrescante.", color: '#2dd4bf', glowColor: 'rgba(45, 212, 191, 0.3)' },
   { id: 'red_dragon', name: 'Red Dragon', rarity: Rarity.COMUM_B, growthTime: 180, baseValue: 1300, info: "Sopro de fogo.", color: '#dc2626', glowColor: 'rgba(220, 38, 38, 0.3)' },
-
-  // Rara
   { id: 'northern_lights', name: 'Northern Lights', rarity: Rarity.RARA, growthTime: 300, baseValue: 2200, info: "Aurora boreal.", color: '#4d7c0f', secondaryColor: '#84cc16', glowColor: 'rgba(77, 124, 15, 0.6)' },
   { id: 'purple_haze', name: 'Purple Haze', rarity: Rarity.RARA, growthTime: 360, baseValue: 3800, info: "Psicodélica.", color: '#a855f7', secondaryColor: '#ec4899', glowColor: 'rgba(168, 85, 247, 0.6)' },
   { id: 'amnesia_haze', name: 'Amnesia Haze', rarity: Rarity.RARA, growthTime: 420, baseValue: 5500, info: "Esqueça os problemas.", color: '#fbbf24', secondaryColor: '#d97706', glowColor: 'rgba(251, 191, 36, 0.5)' },
@@ -63,8 +69,6 @@ export const SEEDS: Seed[] = [
   { id: 'gelato_41', name: 'Gelato #41', rarity: Rarity.RARA, growthTime: 720, baseValue: 18000, info: "Cremosa.", color: '#f472b6', secondaryColor: '#db2777', glowColor: 'rgba(244, 114, 182, 0.5)' },
   { id: 'purple_punch', name: 'Purple Punch', rarity: Rarity.RARA, growthTime: 780, baseValue: 22000, info: "Punch de uva.", color: '#7c3aed', secondaryColor: '#4c1d95', glowColor: 'rgba(124, 58, 237, 0.6)' },
   { id: 'super_silver_haze', name: 'Super Silver', rarity: Rarity.RARA, growthTime: 840, baseValue: 26000, info: "Brilho lunar.", color: '#e2e8f0', secondaryColor: '#94a3b8', glowColor: 'rgba(226, 232, 240, 0.6)' },
-
-  // Lendária
   { id: 'neon_og', name: 'Neon OG', rarity: Rarity.LENDARIA, growthTime: 1200, baseValue: 70000, hashCoinPrice: 80, info: "Luz negra.", color: '#f472b6', gradientColors: ['#f472b6', '#fbbf24'], glowColor: 'rgba(244, 114, 182, 0.8)' },
   { id: 'white_widow', name: 'White Widow', rarity: Rarity.LENDARIA, growthTime: 1400, baseValue: 95000, hashCoinPrice: 150, info: "A Rainha.", color: '#ffffff', gradientColors: ['#ffffff', '#94a3b8'], glowColor: 'rgba(255, 255, 255, 0.8)' },
   { id: 'moon_rock', name: 'Moon Rock', rarity: Rarity.LENDARIA, growthTime: 1600, baseValue: 140000, hashCoinPrice: 300, info: "Fora da Terra.", color: '#4b5563', gradientColors: ['#4b5563', '#111827'], glowColor: 'rgba(75, 85, 99, 0.7)' },
@@ -73,8 +77,6 @@ export const SEEDS: Seed[] = [
   { id: 'godfather_og', name: 'Godfather OG', rarity: Rarity.LENDARIA, growthTime: 2200, baseValue: 400000, hashCoinPrice: 1200, info: "O Dono.", color: '#111827', gradientColors: ['#111827', '#facc15'], glowColor: 'rgba(250, 204, 21, 0.6)' },
   { id: 'black_widow', name: 'Black Widow', rarity: Rarity.LENDARIA, growthTime: 2400, baseValue: 600000, hashCoinPrice: 2000, info: "Fatal.", color: '#000000', gradientColors: ['#000000', '#ef4444'], glowColor: 'rgba(239, 68, 68, 0.6)' },
   { id: 'sun_walker', name: 'Sun Walker', rarity: Rarity.LENDARIA, growthTime: 2600, baseValue: 800000, hashCoinPrice: 3500, info: "Caminhante solar.", color: '#fbbf24', gradientColors: ['#fbbf24', '#ffffff'], glowColor: 'rgba(251, 191, 36, 0.6)' },
-
-  // Mística
   { id: 'sticky_icky', name: 'Sticky Icky', rarity: Rarity.MISTICA, growthTime: 3600, baseValue: 3500000, hashCoinPrice: 10000, info: "A Lendária.", color: '#22c55e', gradientColors: ['#22c55e', '#ffffff'], glowColor: 'rgba(34, 197, 94, 1)' },
   { id: 'alien_og', name: 'Alien OG', rarity: Rarity.MISTICA, growthTime: 4500, baseValue: 8500000, hashCoinPrice: 25000, info: "DNA Alien.", color: '#10b981', gradientColors: ['#064e3b', '#10b981'], glowColor: 'rgba(16, 185, 129, 0.9)' },
   { id: 'chrono_herb', name: 'Chrono Herb', rarity: Rarity.MISTICA, growthTime: 5400, baseValue: 20000000, hashCoinPrice: 50000, info: "Controla o tempo.", color: '#3b82f6', gradientColors: ['#1e3a8a', '#3b82f6', '#ffffff'], glowColor: 'rgba(59, 130, 246, 1)' },
@@ -110,11 +112,38 @@ export const CONSUMABLES: ConsumableItem[] = [
 ];
 
 export const LUXURY_ITEMS: LuxuryItem[] = [
-  { id: 'free_green', name: 'Verde Natural', category: 'profile_bg', rarity: Rarity.COMUM_A, price: 0, currency: 'coins', icon: '🟢', description: 'O clássico cultivo.', harvestBonus: 0, style: { bg: 'from-green-800 to-green-950', border: 'border-green-500/30', text: 'text-green-400', accent: 'bg-green-500' } },
-  { id: 'free_blue', name: 'Azul Celeste', category: 'profile_bg', rarity: Rarity.COMUM_A, price: 0, currency: 'coins', icon: '🔵', description: 'Céu limpo para colheita.', harvestBonus: 0, style: { bg: 'from-blue-800 to-blue-950', border: 'border-blue-500/30', text: 'text-blue-400', accent: 'bg-blue-500' } },
-  { id: 'free_red', name: 'Fogo Sativa', category: 'profile_bg', rarity: Rarity.COMUM_A, price: 0, currency: 'coins', icon: '🔴', description: 'Paixão pelo plantio.', harvestBonus: 0, style: { bg: 'from-red-800 to-red-950', border: 'border-red-500/30', text: 'text-red-400', accent: 'bg-red-500' } },
-  { id: 'free_gray', name: 'Concreto Urbano', category: 'profile_bg', rarity: Rarity.COMUM_A, price: 0, currency: 'coins', icon: '🔘', description: 'Foco no asfalto.', harvestBonus: 0, style: { bg: 'from-zinc-800 to-zinc-950', border: 'border-zinc-500/30', text: 'text-zinc-400', accent: 'bg-zinc-500' } },
+  // TEMAS DE PERFIL (GRÁTIS) - +2% de Velocidade
+  { id: 'free_green', name: 'Verde Natural', category: 'profile_bg', rarity: Rarity.COMUM_A, price: 0, currency: 'coins', icon: '🟢', description: 'O clássico cultivo.', harvestBonus: 0, growthSpeedBonus: 0.02, style: { bg: 'from-emerald-800 via-green-950 to-black', border: 'border-green-500/20', text: 'text-green-400', accent: '#22c55e' } },
+  { id: 'free_blue', name: 'Azul Celeste', category: 'profile_bg', rarity: Rarity.COMUM_A, price: 0, currency: 'coins', icon: '🔵', description: 'Céu limpo para colheita.', harvestBonus: 0, growthSpeedBonus: 0.02, style: { bg: 'from-blue-800 via-sky-950 to-black', border: 'border-blue-500/20', text: 'text-blue-400', accent: '#3b82f6' } },
+  { id: 'free_red', name: 'Fogo Sativa', category: 'profile_bg', rarity: Rarity.COMUM_A, price: 0, currency: 'coins', icon: '🔴', description: 'Paixão pelo plantio.', harvestBonus: 0, growthSpeedBonus: 0.02, style: { bg: 'from-red-800 via-rose-950 to-black', border: 'border-red-500/20', text: 'text-red-400', accent: '#ef4444' } },
+  { id: 'free_gray', name: 'Concreto Urbano', category: 'profile_bg', rarity: Rarity.COMUM_A, price: 0, currency: 'coins', icon: '🔘', description: 'Foco no asfalto.', harvestBonus: 0, growthSpeedBonus: 0.02, style: { bg: 'from-zinc-800 via-neutral-900 to-black', border: 'border-zinc-500/20', text: 'text-zinc-400', accent: '#71717a' } },
 
+  // NOVOS TEMAS (ADICIONADOS)
+  { id: 'theme_verde_zen', name: 'Verde Zen', category: 'hud_theme', rarity: Rarity.COMUM_A, price: 5000, currency: 'coins', icon: '🧘', description: 'Paz absoluta no jardim.', harvestBonus: 0.01, growthSpeedBonus: 0.01, style: { bg: 'bg-emerald-950/60', border: 'border-green-500/30', text: 'text-green-300', accent: '#10b981' } },
+  { id: 'theme_terra_viva', name: 'Terra Viva', category: 'hud_theme', rarity: Rarity.COMUM_A, price: 5000, currency: 'coins', icon: '🌍', description: 'Nutrição terrestre profunda.', harvestBonus: 0.01, growthSpeedBonus: 0.01, style: { bg: 'bg-amber-950/60', border: 'border-amber-600/30', text: 'text-amber-400', accent: '#b45309' } },
+  { id: 'theme_brisa_rural', name: 'Brisa Rural', category: 'hud_theme', rarity: Rarity.COMUM_A, price: 5000, currency: 'coins', icon: '🌾', description: 'Ar fresco do campo.', harvestBonus: 0.01, growthSpeedBonus: 0.01, style: { bg: 'bg-sky-950/60', border: 'border-blue-400/30', text: 'text-blue-200', accent: '#38bdf8' } },
+  { id: 'theme_neon_farm', name: 'Neon Farm', category: 'hud_theme', rarity: Rarity.RARA, price: 45000, currency: 'coins', icon: '💡', description: 'Cultivo sob luzes negras.', harvestBonus: 0.03, growthSpeedBonus: 0.03, style: { bg: 'bg-zinc-900/80', border: 'border-green-400 theme-animated-border', text: 'text-green-400', accent: '#4ade80', effectClass: 'theme-diffuse-glow', glowColor: 'rgba(74,222,128,0.3)' } },
+  { id: 'theme_aurora_grow', name: 'Aurora Grow', category: 'hud_theme', rarity: Rarity.RARA, price: 45000, currency: 'coins', icon: '🌌', description: 'Energia das luzes polares.', harvestBonus: 0.03, growthSpeedBonus: 0.03, style: { bg: 'bg-teal-900/70', border: 'border-pink-400 theme-animated-border', text: 'text-pink-300', accent: '#f472b6', effectClass: 'theme-diffuse-glow', glowColor: 'rgba(244,114,182,0.3)' } },
+  { id: 'theme_cyber_roots', name: 'Cyber Roots', category: 'hud_theme', rarity: Rarity.LENDARIA, price: 5000, currency: 'hashCoins', icon: '🌐', description: 'Raízes conectadas à rede.', harvestBonus: 0.06, growthSpeedBonus: 0.06, style: { bg: 'bg-slate-950/90', border: 'border-cyan-500 theme-animated-border', text: 'text-cyan-400', accent: '#22d3ee', effectClass: 'theme-diffuse-glow theme-subtle-texture', glowColor: 'rgba(34,211,238,0.4)' } },
+  { id: 'theme_golden_harvest', name: 'Golden Harvest', category: 'hud_theme', rarity: Rarity.LENDARIA, price: 7500, currency: 'hashCoins', icon: '📀', description: 'O brilho da riqueza.', harvestBonus: 0.06, growthSpeedBonus: 0.06, style: { bg: 'bg-yellow-950/90', border: 'border-yellow-500 theme-animated-border', text: 'text-yellow-200', accent: '#facc15', effectClass: 'theme-diffuse-glow theme-subtle-texture', glowColor: 'rgba(250,204,21,0.4)' } },
+  { id: 'theme_cosmic_plant', name: 'Cosmic Plant', category: 'hud_theme', rarity: Rarity.MISTICA, price: 50000, currency: 'hashCoins', icon: '🌟', description: 'O auge do cultivo estelar.', harvestBonus: 0.10, growthSpeedBonus: 0.10, style: { bg: 'bg-purple-950/95', border: 'border-white theme-animated-border', text: 'text-white', accent: '#ffffff', effectClass: 'theme-diffuse-glow theme-subtle-texture', glowColor: 'rgba(255,255,255,0.6)' } },
+
+  // TEMAS HUD (EXISTENTES)
+  { id: 'theme_purple_haze', name: 'Tema Purple Haze', category: 'hud_theme', rarity: Rarity.RARA, price: 25000, currency: 'coins', icon: '🟣', description: 'Interface roxa vibrante.', harvestBonus: 0.02, growthSpeedBonus: 0.05, style: { bg: 'bg-purple-900/80', border: 'border-purple-400 theme-animated-border', text: 'text-purple-300', accent: '#a855f7', effectClass: 'theme-diffuse-glow', glowColor: 'rgba(168,85,247,0.3)' } },
+  { id: 'theme_lemon_skunk', name: 'Tema Lemon Skunk', category: 'hud_theme', rarity: Rarity.RARA, price: 25000, currency: 'coins', icon: '🟡', description: 'Cítrico e brilhante.', harvestBonus: 0.02, growthSpeedBonus: 0.05, style: { bg: 'bg-yellow-900/80', border: 'border-yellow-400 theme-animated-border', text: 'text-yellow-300', accent: '#eab308', effectClass: 'theme-diffuse-glow', glowColor: 'rgba(234,179,8,0.3)' } },
+  { id: 'theme_sour_diesel', name: 'Tema Sour Diesel', category: 'hud_theme', rarity: Rarity.RARA, price: 25000, currency: 'coins', icon: '🟢', description: 'Verde industrial.', harvestBonus: 0.02, growthSpeedBonus: 0.05, style: { bg: 'bg-emerald-900/80', border: 'border-emerald-400 theme-animated-border', text: 'text-emerald-300', accent: '#10b981', effectClass: 'theme-diffuse-glow', glowColor: 'rgba(16,185,129,0.3)' } },
+  { id: 'theme_blue_dream', name: 'Tema Blue Dream', category: 'hud_theme', rarity: Rarity.RARA, price: 30000, currency: 'coins', icon: '🔵', description: 'Calmaria azulada.', harvestBonus: 0.02, growthSpeedBonus: 0.05, style: { bg: 'bg-blue-900/80', border: 'border-blue-400 theme-animated-border', text: 'text-blue-300', accent: '#3b82f6', effectClass: 'theme-diffuse-glow', glowColor: 'rgba(59,130,246,0.3)' } },
+  { id: 'theme_galactic_gold', name: 'Tema Ouro Estelar', category: 'hud_theme', rarity: Rarity.LENDARIA, price: 8000, currency: 'hashCoins', icon: '✨', description: 'Luxo espacial.', harvestBonus: 0.08, growthSpeedBonus: 0.08, style: { bg: 'bg-amber-900/90', border: 'border-yellow-500 theme-animated-border', text: 'text-yellow-200', accent: '#fbbf24', effectClass: 'theme-diffuse-glow theme-subtle-texture', glowColor: 'rgba(251,191,36,0.4)' } },
+  { id: 'theme_black_widow', name: 'Tema Black Widow', category: 'hud_theme', rarity: Rarity.MISTICA, price: 25000, currency: 'hashCoins', icon: '🖤', description: 'Elegância fatal.', harvestBonus: 0.15, growthSpeedBonus: 0.12, style: { bg: 'bg-black/95', border: 'border-red-600 theme-animated-border', text: 'text-red-500', accent: '#dc2626', effectClass: 'theme-diffuse-glow theme-subtle-texture', glowColor: 'rgba(220,38,38,0.5)' } },
+
+  // BGS DE PERFIL (PAGOS)
+  { id: 'bg_nebula', name: 'Nebulosa Sativa', category: 'profile_bg', rarity: Rarity.LENDARIA, price: 5000, currency: 'hashCoins', icon: '🖼️', description: 'O cosmos em forma de folha.', harvestBonus: 0.05, growthSpeedBonus: 0.08, style: { bg: 'from-green-900 via-purple-950 to-black', border: 'border-green-400 theme-animated-border', text: 'text-green-300', accent: '#4ade80', effectClass: 'theme-diffuse-glow', glowColor: 'rgba(74,222,128,0.3)' } },
+  { id: 'bg_jungle', name: 'Selva Profunda', category: 'profile_bg', rarity: Rarity.RARA, price: 45000, currency: 'coins', icon: '🌴', description: 'Densidade tropical.', harvestBonus: 0.03, growthSpeedBonus: 0.05, style: { bg: 'from-emerald-950 via-teal-950 to-black', border: 'border-emerald-500/50', text: 'text-emerald-200', accent: '#10b981' } },
+  { id: 'bg_sunset', name: 'Pôr do Sol Indica', category: 'profile_bg', rarity: Rarity.RARA, price: 38000, currency: 'coins', icon: '🌇', description: 'Cores quentes e relaxantes.', harvestBonus: 0.03, growthSpeedBonus: 0.05, style: { bg: 'from-orange-950 via-red-950 to-black', border: 'border-orange-500/50', text: 'text-orange-200', accent: '#f97316' } },
+  { id: 'bg_cyber_lab', name: 'Laboratório Cyber', category: 'profile_bg', rarity: Rarity.LENDARIA, price: 85000, currency: 'coins', icon: '🤖', description: 'Extração futurista.', harvestBonus: 0.06, growthSpeedBonus: 0.08, style: { bg: 'from-slate-900 via-blue-950 to-black', border: 'border-cyan-500 theme-animated-border', text: 'text-cyan-400', accent: '#06b6d4', effectClass: 'theme-diffuse-glow', glowColor: 'rgba(6,182,212,0.3)' } },
+  { id: 'bg_zen_garden', name: 'Jardim Zen', category: 'profile_bg', rarity: Rarity.COMUM_A, price: 15000, currency: 'coins', icon: '⛩️', description: 'Paz no cultivo.', harvestBonus: 0.01, growthSpeedBonus: 0.02, style: { bg: 'from-slate-800 via-slate-900 to-black', border: 'border-slate-500/30', text: 'text-slate-300', accent: '#94a3b8' } },
+
+  // ITENS GEAR (BÔNUS DE COLHEITA APENAS)
   { id: 'silk_24k', name: 'Seda de Ouro 24k', category: 'jewelry', rarity: Rarity.RARA, price: 20000, currency: 'coins', icon: '📜', description: 'Papel de enrolar banhado a ouro puro.', harvestBonus: 0.05 },
   { id: 'diamond_grinder', name: 'Dichavador de Diamante', category: 'jewelry', rarity: Rarity.LENDARIA, price: 6500, currency: 'hashCoins', icon: '⚙️', description: 'Corta até as strains mais densas.', harvestBonus: 0.10 },
   { id: 'crystal_bong', name: 'Bong de Andrômeda', category: 'luxury', rarity: Rarity.MISTICA, price: 35000, currency: 'hashCoins', icon: '🏺', description: 'Esculpido em cristal estelar.', harvestBonus: 0.20 },
@@ -130,17 +159,4 @@ export const LUXURY_ITEMS: LuxuryItem[] = [
   { id: 'cbd_oil_vial', name: 'Frasco de CBD Puro', category: 'jewelry', rarity: Rarity.RARA, price: 22500, currency: 'coins', icon: '🧪', description: 'Calma concentrada.', harvestBonus: 0.04 },
   { id: 'leafy_backpack', name: 'Mochila de Folhas', category: 'luxury', rarity: Rarity.COMUM_A, price: 8000, currency: 'coins', icon: '🎒', description: 'Leve seus buds com estilo.', harvestBonus: 0.02 },
   { id: 'neon_shades', name: 'Óculos Neon 80s', category: 'jewelry', rarity: Rarity.RARA, price: 15000, currency: 'coins', icon: '🕶️', description: 'Visão psicodélica.', harvestBonus: 0.03 },
-
-  { id: 'theme_purple_haze', name: 'Tema Purple Haze', category: 'hud_theme', rarity: Rarity.RARA, price: 25000, currency: 'coins', icon: '🟣', description: 'Interface roxa vibrante.', harvestBonus: 0.02, style: { bg: 'bg-purple-900/80', border: 'border-purple-400', text: 'text-purple-300', accent: 'bg-purple-500' } },
-  { id: 'theme_lemon_skunk', name: 'Tema Lemon Skunk', category: 'hud_theme', rarity: Rarity.RARA, price: 25000, currency: 'coins', icon: '🟡', description: 'Cítrico e brilhante.', harvestBonus: 0.02, style: { bg: 'bg-yellow-900/80', border: 'border-yellow-400', text: 'text-yellow-300', accent: 'bg-yellow-500' } },
-  { id: 'theme_sour_diesel', name: 'Tema Sour Diesel', category: 'hud_theme', rarity: Rarity.RARA, price: 25000, currency: 'coins', icon: '🟢', description: 'Verde industrial.', harvestBonus: 0.02, style: { bg: 'bg-emerald-900/80', border: 'border-emerald-400', text: 'text-emerald-300', accent: 'bg-emerald-500' } },
-  { id: 'theme_blue_dream', name: 'Tema Blue Dream', category: 'hud_theme', rarity: Rarity.RARA, price: 30000, currency: 'coins', icon: '🔵', description: 'Calmaria azulada.', harvestBonus: 0.02, style: { bg: 'bg-blue-900/80', border: 'border-blue-400', text: 'text-blue-300', accent: 'bg-blue-500' } },
-  { id: 'theme_galactic_gold', name: 'Tema Ouro Estelar', category: 'hud_theme', rarity: Rarity.LENDARIA, price: 8000, currency: 'hashCoins', icon: '✨', description: 'Luxo espacial.', harvestBonus: 0.08, style: { bg: 'bg-amber-900/90', border: 'border-yellow-500', text: 'text-yellow-200', accent: 'bg-yellow-600' } },
-  { id: 'theme_black_widow', name: 'Tema Black Widow', category: 'hud_theme', rarity: Rarity.MISTICA, price: 25000, currency: 'hashCoins', icon: '🖤', description: 'Elegância fatal.', harvestBonus: 0.15, style: { bg: 'bg-black/90', border: 'border-red-600', text: 'text-red-500', accent: 'bg-red-800' } },
-
-  { id: 'bg_nebula', name: 'Nebulosa Sativa', category: 'profile_bg', rarity: Rarity.LENDARIA, price: 5000, currency: 'hashCoins', icon: '🖼️', description: 'O cosmos em forma de folha.', harvestBonus: 0.05, style: { bg: 'from-green-900 via-purple-900 to-black', border: 'border-green-400', text: 'text-green-300', accent: 'bg-green-600' } },
-  { id: 'bg_jungle', name: 'Selva Profunda', category: 'profile_bg', rarity: Rarity.RARA, price: 45000, currency: 'coins', icon: '🌴', description: 'Densidade tropical.', harvestBonus: 0.03, style: { bg: 'from-emerald-900 to-teal-950', border: 'border-emerald-500', text: 'text-emerald-200', accent: 'bg-emerald-600' } },
-  { id: 'bg_sunset', name: 'Pôr do Sol Indica', category: 'profile_bg', rarity: Rarity.RARA, price: 38000, currency: 'coins', icon: '🌇', description: 'Cores quentes e relaxantes.', harvestBonus: 0.03, style: { bg: 'from-orange-800 to-red-950', border: 'border-orange-500', text: 'text-orange-200', accent: 'bg-orange-600' } },
-  { id: 'bg_cyber_lab', name: 'Laboratório Cyber', category: 'profile_bg', rarity: Rarity.LENDARIA, price: 85000, currency: 'coins', icon: '🤖', description: 'Extração futurista.', harvestBonus: 0.06, style: { bg: 'bg-slate-900', border: 'border-cyan-500', text: 'text-cyan-400', accent: 'bg-cyan-600' } },
-  { id: 'bg_zen_garden', name: 'Jardim Zen', category: 'profile_bg', rarity: Rarity.COMUM_A, price: 15000, currency: 'coins', icon: '⛩️', description: 'Paz no cultivo.', harvestBonus: 0.01, style: { bg: 'from-slate-700 to-slate-900', border: 'border-slate-500', text: 'text-slate-300', accent: 'bg-slate-600' } },
 ];
