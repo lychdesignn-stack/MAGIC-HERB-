@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Player, Plot, Rarity, Offer, MapOffer } from './types';
 import { SEEDS, NPCS, LUXURY_ITEMS, UPGRADE_COSTS, TERRITORIES, CONSUMABLES, TITLES, RARITY_DISPLAY } from './constants';
@@ -402,6 +403,11 @@ const App: React.FC = () => {
     return () => clearInterval(tick);
   }, [lastOfferReset, lastMapReset, refreshOffers, refreshMapOffers, passiveBonuses.growthSpeedMultiplier]);
 
+  const calculateReputationGain = (base: number, level: number) => {
+    const multiplier = 0.4; 
+    return Math.max(1, Math.floor(base * (1 / (1 + level / 8)) * multiplier));
+  };
+
   const handleMapSale = (offerId: string, wasBusted: boolean) => {
     const offer = mapOffers.find(o => o.id === offerId);
     if (!offer) return;
@@ -502,6 +508,18 @@ const App: React.FC = () => {
     }
   };
 
+  const handleBuyTitle = (titleId: string, price: number) => {
+    if (player.hashCoins >= price && !player.ownedTitles.includes(titleId)) {
+        setPlayer(prev => ({
+            ...prev,
+            hashCoins: prev.hashCoins - price,
+            ownedTitles: [...prev.ownedTitles, titleId]
+        }));
+        setNotification(`TÍTULO OBTIDO: ${TITLES.find(t => t.id === titleId)?.name}`);
+        setTimeout(() => setNotification(null), 3000);
+    }
+  };
+
   const handleUpgradePlot = (id: number) => {
     const plot = plots.find(p => p.id === id);
     if(!plot) return;
@@ -566,7 +584,7 @@ const App: React.FC = () => {
       <main className="flex-1 overflow-y-auto pt-4 px-4 custom-scrollbar pb-10">
         {activeScreen === 'farm' && <FarmGrid plots={plots} onPlant={handlePlant} onWater={(id) => setPlots(p => p.map(x => x.id === id ? {...x, isWatered: true} : x))} onToggleLight={(id) => setPlots(p => p.map(x => x.id === id ? {...x, isLightOn: !x.isLightOn} : x))} onPrune={(id) => setPlots(p => p.map(x => x.id === id ? {...x, isPruned: true} : x))} onHarvest={handleHarvest} onUpgrade={handleUpgradePlot} inventory={player.inventory} player={player} />}
         {activeScreen === 'warehouse' && <Warehouse player={player} onBack={() => setActiveScreen('farm')} />}
-        {activeScreen === 'shop' && <Shop player={player} plots={plots} onBuy={handleBuy} onUpgradePlot={handleUpgradePlot} onBuyLuxury={handleBuyLuxury} onBuyConsumable={handleBuyConsumable} getConsumablePrice={getConsumablePrice} onBack={() => setActiveScreen('farm')} />}
+        {activeScreen === 'shop' && <Shop player={player} plots={plots} onBuy={handleBuy} onUpgradePlot={handleUpgradePlot} onBuyLuxury={handleBuyLuxury} onBuyConsumable={handleBuyConsumable} onBuyTitle={handleBuyTitle} getConsumablePrice={getConsumablePrice} onBack={() => setActiveScreen('farm')} />}
         {activeScreen === 'npc' && <NPCPanel player={player} offers={offers} onAcceptOffer={handleAcceptOffer} onBuyFromNPC={handleBuyFromNPC} onBack={() => setActiveScreen('farm')} aiDialogue={aiDialogue} onGreet={(n) => {}} offerResetIn={OFFER_RESET_INTERVAL - (Date.now() - lastOfferReset)} />}
         {activeScreen === 'lab' && <Fabrication player={player} onFabricate={(id) => {
           const budId = `${id}_bud`;
@@ -578,7 +596,7 @@ const App: React.FC = () => {
             setTimeout(() => setNotification(null), 2000);
           }
         }} onBack={() => setActiveScreen('farm')} />}
-        {activeScreen === 'profile' && <ProfileView player={player} onBuyLuxury={handleBuyLuxury} onToggleCosmetic={handleToggleCosmetic} onSetAvatar={(a, g) => setPlayer(p => ({...p, avatarId: a, gender: g}))} onBuyTitle={(t, p) => {}} onSetTitle={(t) => setPlayer(p => ({...p, activeTitle: t}))} onUpdateName={handleUpdateName} onBack={() => setActiveScreen('farm')} />}
+        {activeScreen === 'profile' && <ProfileView player={player} onBuyLuxury={handleBuyLuxury} onToggleCosmetic={handleToggleCosmetic} onSetAvatar={(a, g) => setPlayer(p => ({...p, avatarId: a, gender: g}))} onBuyTitle={handleBuyTitle} onSetTitle={(t) => setPlayer(p => ({...p, activeTitle: t}))} onUpdateName={handleUpdateName} onBack={() => setActiveScreen('farm')} />}
         {activeScreen === 'map' && <CityMap player={player} mapOffers={mapOffers} onSale={handleMapSale} onBack={() => setActiveScreen('farm')} />}
       </main>
       <BottomNav activeScreen={activeScreen === 'map' ? 'farm' : activeScreen} onNavigate={setActiveScreen} />

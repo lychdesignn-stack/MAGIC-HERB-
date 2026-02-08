@@ -9,6 +9,7 @@ interface ShopProps {
   onUpgradePlot: (plotId: number) => void;
   onBuyLuxury: (itemId: string) => void;
   onBuyConsumable: (itemId: string) => void;
+  onBuyTitle: (titleId: string, price: number) => void;
   getConsumablePrice: (itemId: string, basePrice: number) => number;
   onBack: () => void;
 }
@@ -20,33 +21,34 @@ const PurchaseButton: React.FC<{
   activeClass?: string;
   isLocked?: boolean;
 }> = ({ onClick, disabled, label, activeClass = "bg-white text-black border-white", isLocked = false }) => {
-  const [processing, setProcessing] = useState(false);
+  const [isFlashActive, setIsFlashActive] = useState(false);
 
   const handleClick = () => {
-    if (disabled || processing || isLocked) return;
-    setProcessing(true);
-    onClick();
-    setTimeout(() => setProcessing(false), 500);
+    if (disabled || isLocked || isFlashActive) return;
+    setIsFlashActive(true);
+    
+    // Sequência de animação de 0.25s
+    setTimeout(() => {
+        setIsFlashActive(false);
+        onClick();
+    }, 250);
   };
 
   return (
     <button
       onClick={handleClick}
-      disabled={disabled || processing || isLocked}
-      className={`relative overflow-hidden px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase border transition-all duration-300
-        ${processing ? 'scale-95 brightness-150 shadow-[0_0_20px_white]' : 'active:scale-95'}
+      disabled={disabled || isLocked}
+      className={`relative px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase border transition-all duration-200
+        ${isFlashActive ? 'animate-purchase-flash' : 'active:scale-95'}
         ${isLocked ? 'bg-red-900/20 border-red-500/50 text-red-500/50' : disabled ? 'opacity-20 border-white/10 grayscale' : activeClass}
       `}
     >
-      <span className={processing ? 'animate-pulse' : ''}>{label}</span>
-      {processing && (
-        <span className="absolute inset-0 bg-white/20 animate-ping" />
-      )}
+      {label}
     </button>
   );
 };
 
-const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyLuxury, onBuyConsumable, getConsumablePrice, onBack }) => {
+const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyLuxury, onBuyConsumable, onBuyTitle, getConsumablePrice, onBack }) => {
   const [activeTab, setActiveTab] = useState<'seeds' | 'items' | 'premium' | 'titles' | 'lands'>('seeds');
 
   const getRarityStyles = (rarity: Rarity) => {
@@ -64,8 +66,7 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
     switch (cond.type) {
       case 'level': return player.level >= cond.value;
       case 'reputation': 
-        const totalRep = (Object.values(player.reputation) as number[]).reduce((a, b) => a + b, 0);
-        return totalRep >= cond.value;
+        return player.totalReputation >= cond.value;
       case 'stats': return (player.stats?.totalPlanted || 0) >= cond.value;
       default: return true;
     }
@@ -214,10 +215,10 @@ const Shop: React.FC<ShopProps> = ({ player, plots, onBuy, onUpgradePlot, onBuyL
                    <p className="text-[8px] text-white/30 mt-1">Prestígio Social</p>
                  </div>
                  <PurchaseButton 
-                  onClick={() => window.dispatchEvent(new CustomEvent('BUY_TITLE', { detail: { id: title.id, price: title.price } }))} 
+                  onClick={() => onBuyTitle(title.id, title.price || 0)} 
                   disabled={owned || !canAfford}
                   activeClass={owned ? 'bg-indigo-600/20 border-indigo-500 text-indigo-500' : 'bg-white text-black border-white'}
-                  label={owned ? `POSSUÍ` : `🍪 ${title.price}`}
+                  label={owned ? `OBTIDO` : `🍪 ${title.price}`}
                  />
               </div>
             );
