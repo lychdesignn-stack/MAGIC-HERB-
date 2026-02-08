@@ -1,4 +1,3 @@
-
 export enum Rarity {
   COMUM_A = 'comumA',
   COMUM_B = 'comumB',
@@ -106,6 +105,7 @@ export interface Player {
   level: number;
   experience: number;
   totalReputation: number;
+  totalReputationXP: number;
   stats: {
     totalPlanted: number;
     totalSold: number;

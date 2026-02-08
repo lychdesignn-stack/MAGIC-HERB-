@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Player } from '../types';
 import { LUXURY_ITEMS } from '../constants';
@@ -57,6 +56,14 @@ const HUD: React.FC<HUDProps> = ({
     }, 2000);
   };
 
+  // Cálculo de XP necessário para Nível de Jogador
+  const playerXPNeeded = 100 * (1.4 + player.level * 0.15);
+  const playerXPProgress = (player.experience / playerXPNeeded) * 100;
+
+  // Cálculo de XP necessário para Nível de Reputação
+  const repXPNeeded = 50 * (1.6 + player.totalReputation * 0.25);
+  const repXPProgress = (player.totalReputationXP / repXPNeeded) * 100;
+
   return (
     <div className={`w-full ${themeStyles.bg} backdrop-blur-xl border-b ${themeStyles.border} p-3 flex flex-col gap-2 z-50 transition-all duration-700 ${themeStyles.effectClass || ''}`}>
       {/* Sistema de Códigos Overlay */}
@@ -101,13 +108,13 @@ const HUD: React.FC<HUDProps> = ({
               <div className="flex items-center gap-1">
                 <span className={`text-[7px] font-black uppercase tracking-tighter text-white/60`}>LV.{player.level}</span>
                 <div className="h-1.5 flex-1 bg-white/10 rounded-full border border-white/5 overflow-hidden">
-                  <div className="h-full bg-indigo-500 transition-all duration-500" style={{ width: `${player.experience}%` }} />
+                  <div className="h-full bg-indigo-500 transition-all duration-500" style={{ width: `${playerXPProgress}%` }} />
                 </div>
               </div>
               <div className="flex items-center gap-1">
                 <span className={`text-[7px] font-black uppercase tracking-tighter text-amber-500`}>REP.{player.totalReputation}</span>
                 <div className="h-1.5 flex-1 bg-white/10 rounded-full border border-white/5 overflow-hidden">
-                  <div className="h-full bg-amber-500 transition-all duration-500" style={{ width: `${Math.min(100, (player.totalReputation / 250) * 100)}%` }} />
+                  <div className="h-full bg-amber-500 transition-all duration-500" style={{ width: `${repXPProgress}%` }} />
                 </div>
               </div>
             </div>

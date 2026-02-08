@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Player, Plot, Rarity, Offer, MapOffer } from './types';
 import { SEEDS, NPCS, LUXURY_ITEMS, UPGRADE_COSTS, TERRITORIES, CONSUMABLES, TITLES, RARITY_DISPLAY } from './constants';
@@ -40,6 +39,7 @@ const INITIAL_PLAYER: Player = {
   level: 1,
   experience: 0,
   totalReputation: 0,
+  totalReputationXP: 0,
   stats: { totalPlanted: 0, totalSold: 0, totalEarned: 0 },
   inventory: createInitialInventory(),
   reputation: NPCS.reduce((acc, npc) => ({ ...acc, [npc.id]: 0 }), {}),
@@ -69,6 +69,7 @@ const App: React.FC = () => {
         ...p,
         unlockedRarities: [Rarity.COMUM_A, Rarity.COMUM_B, Rarity.RARA, Rarity.LENDARIA, Rarity.MISTICA],
         totalReputation: Math.max(p.totalReputation, 150),
+        totalReputationXP: 0,
         level: Math.max(p.level, 35)
       }));
       return "CONTEÚDO TOTAL DESBLOQUEADO!";
@@ -141,6 +142,21 @@ const App: React.FC = () => {
     }
   }, [player.experience, player.level]);
 
+  // PROGRESSÃO DE REPUTAÇÃO (Fórmula: 50 * (1.6 + level * 0.25))
+  useEffect(() => {
+    const repXPNeeded = 50 * (1.6 + player.totalReputation * 0.25);
+    if (player.totalReputationXP >= repXPNeeded) {
+      const nextRepLevel = player.totalReputation + 1;
+      setPlayer(prev => ({
+        ...prev,
+        totalReputation: nextRepLevel,
+        totalReputationXP: prev.totalReputationXP - repXPNeeded
+      }));
+      setNotification(`REPUTAÇÃO AUMENTOU! Nível ${nextRepLevel}`);
+      setTimeout(() => setNotification(null), 3000);
+    }
+  }, [player.totalReputationXP, player.totalReputation]);
+
   const passiveBonuses = useMemo(() => {
     const fertCount = player.inventory['fertilizante_bio'] || 0;
     const hidroCount = player.inventory['hidro_boost'] || 0;
@@ -173,11 +189,17 @@ const App: React.FC = () => {
     }
   };
 
-  // ZONAS DE ENTREGA BALANCEADAS POR RARIDADE
+  const getReputationXPValue = (rarity: Rarity) => {
+    switch (rarity) {
+      case Rarity.MISTICA: return 35;
+      case Rarity.LENDARIA: return 20;
+      case Rarity.RARA: return 10;
+      default: return 5;
+    }
+  };
+
   const generateMapOffer = useCallback((territoryId: string, currentPlayer: Player): MapOffer | null => {
     const territory = TERRITORIES.find(t => t.id === territoryId)!;
-    
-    // Filtra estoque baseado na raridade permitida pelo território
     const allowedSeeds = SEEDS.filter(s => s.rarity === territory.requiredRarity);
     const stock = Object.entries(currentPlayer.inventory)
       .filter(([id, qty]) => {
@@ -190,7 +212,6 @@ const App: React.FC = () => {
     if (stock.length > 0) {
       itemId = stock[Math.floor(Math.random() * stock.length)][0];
     } else {
-      // Se não tem no estoque, sugere o item base da raridade da zona
       const baseSeed = allowedSeeds[Math.floor(Math.random() * allowedSeeds.length)] || SEEDS[0];
       itemId = `${baseSeed.id}_bud`;
     }
@@ -202,14 +223,10 @@ const App: React.FC = () => {
 
     const seedShopPrice = Math.floor(seed.baseValue * 0.35);
     const itemBaseValue = isHash ? seedShopPrice * 10 : seedShopPrice;
-    
-    // Bônus do território
     const typeMult = 1.25; 
     const zoneMult = getZoneMultiplier(seed.rarity);
     
     let finalPrice = Math.floor(itemBaseValue * qty * typeMult * zoneMult);
-
-    // Garante lucro mínimo
     const minPrice = Math.floor(itemBaseValue * qty * 1.1);
     finalPrice = Math.max(minPrice, finalPrice);
 
@@ -225,15 +242,11 @@ const App: React.FC = () => {
   const replenishMapOffers = useCallback(() => {
     setMapOffers(prev => {
       if (prev.length >= MIN_MAP_OFFERS) return prev;
-      
       const currentTerritoriesWithOffers = prev.map(o => o.territoryId);
       const availableTerritories = TERRITORIES.filter(t => !currentTerritoriesWithOffers.includes(t.id));
-      
       if (availableTerritories.length === 0) return prev;
-      
       const newOffers = [...prev];
       const countToAdd = Math.min(availableTerritories.length, MIN_MAP_OFFERS - prev.length);
-      
       for(let i=0; i<countToAdd; i++) {
         const targetTerritory = availableTerritories[i];
         const offer = generateMapOffer(targetTerritory.id, player);
@@ -282,7 +295,6 @@ const App: React.FC = () => {
     
     const npc = possibleNpcs[Math.floor(Math.random() * possibleNpcs.length)];
     const isHash = targetItemId.endsWith('_hash');
-    
     const currentStock = currentPlayer.inventory[targetItemId] || 0;
     const quantity = currentStock > 0 ? Math.max(1, Math.floor(currentStock * (0.2 + Math.random() * 0.3))) : (isHash ? 1 : 3);
 
@@ -298,43 +310,20 @@ const App: React.FC = () => {
     const seedShopPrice = Math.floor(seed.baseValue * 0.35);
     const itemBaseValue = isHash ? seedShopPrice * 10 : seedShopPrice;
     const minPrice = itemBaseValue * quantity;
-
     const isContract = Math.random() > 0.5;
     const typeMult = isContract ? 1.3 : 1.1;
     const zoneMult = getZoneMultiplier(seed.rarity);
-
     let finalPriceInCoins = Math.floor(itemBaseValue * quantity * typeMult * zoneMult);
 
     if (currency === 'hashCoins') {
       let finalPrice = Math.max(1, Math.floor(finalPriceInCoins / 800));
       if (seed.rarity === Rarity.MISTICA) finalPrice = Math.max(finalPrice, 50 + Math.floor(Math.random() * 150));
       else if (seed.rarity === Rarity.LENDARIA) finalPrice = Math.max(finalPrice, 20 + Math.floor(Math.random() * 80));
-      
-      return { 
-        id: Math.random().toString(36).substr(2, 9), 
-        npcId: npc.id, 
-        itemId: targetItemId, 
-        quantity, 
-        price: finalPrice, 
-        currency, 
-        reputationAward: 1 
-      };
+      return { id: Math.random().toString(36).substr(2, 9), npcId: npc.id, itemId: targetItemId, quantity, price: finalPrice, currency, reputationAward: 0 };
     } else {
-      const isPremium = seed.rarity === Rarity.LENDARIA || seed.rarity === Rarity.MISTICA;
-      if (!isPremium) {
-        finalPriceInCoins = Math.min(1000, finalPriceInCoins);
-      }
+      if (seed.rarity !== Rarity.LENDARIA && seed.rarity !== Rarity.MISTICA) finalPriceInCoins = Math.min(1000, finalPriceInCoins);
       finalPriceInCoins = Math.max(minPrice, finalPriceInCoins);
-
-      return { 
-        id: Math.random().toString(36).substr(2, 9), 
-        npcId: npc.id, 
-        itemId: targetItemId, 
-        quantity, 
-        price: finalPriceInCoins, 
-        currency, 
-        reputationAward: 1 
-      };
+      return { id: Math.random().toString(36).substr(2, 9), npcId: npc.id, itemId: targetItemId, quantity, price: finalPriceInCoins, currency, reputationAward: 0 };
     }
   }, []);
 
@@ -407,45 +396,34 @@ const App: React.FC = () => {
         }
         return plot;
       }));
-
       if (Date.now() - lastOfferReset > OFFER_RESET_INTERVAL) refreshOffers();
       if (Date.now() - lastMapReset > MAP_OFFER_RESET_INTERVAL) refreshMapOffers();
     }, 1000);
     return () => clearInterval(tick);
   }, [lastOfferReset, lastMapReset, refreshOffers, refreshMapOffers, passiveBonuses.growthSpeedMultiplier]);
 
-  const calculateReputationGain = (base: number, level: number) => {
-    const multiplier = 0.4; 
-    return Math.max(1, Math.floor(base * (1 / (1 + level / 8)) * multiplier));
-  };
-
   const handleMapSale = (offerId: string, wasBusted: boolean) => {
     const offer = mapOffers.find(o => o.id === offerId);
     if (!offer) return;
+    const seedId = offer.itemId.replace('_bud', '').replace('_hash', '');
+    const seed = SEEDS.find(s => s.id === seedId)!;
 
     setPlayer(prev => {
       const newInventory = { ...prev.inventory };
       newInventory[offer.itemId] = Math.max(0, (newInventory[offer.itemId] || 0) - offer.quantity);
-
       if (wasBusted) {
         const lossPercent = 0.04 + (Math.random() * 0.02);
         const fine = Math.floor(prev.coins * lossPercent);
         return { ...prev, coins: Math.max(0, prev.coins - fine), inventory: newInventory };
       }
-
-      const repGain = calculateReputationGain(3, prev.level);
-
+      const xpGain = getReputationXPValue(seed.rarity);
       return {
         ...prev,
         coins: prev.coins + offer.price,
-        totalReputation: prev.totalReputation + repGain,
+        totalReputationXP: prev.totalReputationXP + xpGain,
         experience: prev.experience + 5,
         inventory: newInventory,
-        stats: {
-          ...prev.stats,
-          totalSold: (prev.stats.totalSold || 0) + offer.quantity,
-          totalEarned: (prev.stats.totalEarned || 0) + offer.price
-        }
+        stats: { ...prev.stats, totalSold: (prev.stats.totalSold || 0) + offer.quantity, totalEarned: (prev.stats.totalEarned || 0) + offer.price }
       };
     });
     setMapOffers(prev => prev.filter(o => o.id !== offerId));
@@ -454,20 +432,15 @@ const App: React.FC = () => {
   const handlePlant = (plotId: number, seedId: string) => {
     const plot = plots.find(p => p.id === plotId);
     const seed = SEEDS.find(s => s.id === seedId);
-    
     if (!plot || !seed) return;
-
     const isCommonPlot = plot.type === Rarity.COMUM_A || plot.type === Rarity.COMUM_B;
     const isCommonSeed = seed.rarity === Rarity.COMUM_A || seed.rarity === Rarity.COMUM_B;
-
     const matches = (isCommonPlot && isCommonSeed) || (plot.type === seed.rarity);
-
     if (!matches) {
       setNotification(`ESTE TERRENO SÓ ACEITA PLANTAS ${RARITY_DISPLAY[plot.type].toUpperCase()}!`);
       setTimeout(() => setNotification(null), 3000);
       return;
     }
-
     if (player.inventory[seedId] > 0) {
       setPlots(prev => prev.map(p => p.id === plotId ? { ...p, seedId, plantedAt: Date.now(), accumulatedGrowth: 0, isWatered: false, isLightOn: false, isPruned: false } : p));
       setPlayer(prev => ({ ...prev, stats: { ...prev.stats, totalPlanted: (prev.stats?.totalPlanted || 0) + 1 }, inventory: { ...prev.inventory, [seedId]: prev.inventory[seedId] - 1 } }));
@@ -512,16 +485,17 @@ const App: React.FC = () => {
   const handleAcceptOffer = (offer: Offer) => {
     const qty = player.inventory[offer.itemId] || 0;
     if (qty >= offer.quantity) {
-      const repGain = calculateReputationGain(5, player.level);
-      
+      const seedId = offer.itemId.replace('_bud', '').replace('_hash', '');
+      const seed = SEEDS.find(s => s.id === seedId)!;
+      const xpGain = getReputationXPValue(seed.rarity);
       setPlayer(prev => ({
         ...prev,
         coins: offer.currency === 'coins' ? prev.coins + offer.price : prev.coins,
         hashCoins: offer.currency === 'hashCoins' ? prev.hashCoins + offer.price : prev.hashCoins,
-        totalReputation: prev.totalReputation + repGain,
+        totalReputationXP: prev.totalReputationXP + xpGain,
         experience: prev.experience + 10,
         inventory: { ...prev.inventory, [offer.itemId]: qty - offer.quantity },
-        reputation: { ...prev.reputation, [offer.npcId]: (prev.reputation[offer.npcId] || 0) + repGain },
+        reputation: { ...prev.reputation, [offer.npcId]: (prev.reputation[offer.npcId] || 0) + xpGain },
         stats: { ...prev.stats, totalSold: (prev.stats?.totalSold || 0) + offer.quantity, totalEarned: (prev.stats?.totalEarned || 0) + (offer.currency === 'coins' ? offer.price : 0) }
       }));
       setOffers(prevOffers => prevOffers.filter(o => o.id !== offer.id));
@@ -555,14 +529,12 @@ const App: React.FC = () => {
   const handleBuyConsumable = (itemId: string) => {
     const item = CONSUMABLES.find(i => i.id === itemId);
     if (!item) return;
-    
     const count = player.inventory[item.id] || 0;
     if (count >= 20) {
       setNotification("NÍVEL MÁXIMO ATINGIDO!");
       setTimeout(() => setNotification(null), 3000);
       return;
     }
-
     const currentPrice = getConsumablePrice(item.id, item.price);
     const canAfford = item.currency === 'coins' ? player.coins >= currentPrice : player.hashCoins >= currentPrice;
     if (canAfford) {
@@ -586,13 +558,11 @@ const App: React.FC = () => {
   return (
     <div className="h-screen w-full psychedelic-bg text-white flex flex-col overflow-hidden select-none">
       <HUD player={player} currentEvent={currentEvent} onOpenProfile={() => setActiveScreen('profile')} onOpenMap={() => setActiveScreen('map')} totalBonus={calculateTotalBonus()} passiveBonuses={passiveBonuses} onActivateCode={handleActivateCode} />
-      
       {notification && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[200] bg-indigo-600/90 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20 shadow-[0_0_30px_rgba(99,102,241,0.5)] animate-in slide-in-from-top duration-500">
            <p className="font-cartoon text-xs text-center">{notification}</p>
         </div>
       )}
-
       <main className="flex-1 overflow-y-auto pt-4 px-4 custom-scrollbar pb-10">
         {activeScreen === 'farm' && <FarmGrid plots={plots} onPlant={handlePlant} onWater={(id) => setPlots(p => p.map(x => x.id === id ? {...x, isWatered: true} : x))} onToggleLight={(id) => setPlots(p => p.map(x => x.id === id ? {...x, isLightOn: !x.isLightOn} : x))} onPrune={(id) => setPlots(p => p.map(x => x.id === id ? {...x, isPruned: true} : x))} onHarvest={handleHarvest} onUpgrade={handleUpgradePlot} inventory={player.inventory} player={player} />}
         {activeScreen === 'warehouse' && <Warehouse player={player} onBack={() => setActiveScreen('farm')} />}
@@ -603,14 +573,7 @@ const App: React.FC = () => {
           const hashId = `${id}_hash`;
           const qty = player.inventory[budId] || 0;
           if(qty >= 10) {
-            setPlayer(prev => ({
-              ...prev, 
-              inventory: {
-                ...prev.inventory, 
-                [budId]: qty - 10, 
-                [hashId]: (prev.inventory[hashId] || 0) + 1
-              }
-            }));
+            setPlayer(prev => ({ ...prev, inventory: { ...prev.inventory, [budId]: qty - 10, [hashId]: (prev.inventory[hashId] || 0) + 1 } }));
             setNotification("EXTRAÇÃO CONCLUÍDA!");
             setTimeout(() => setNotification(null), 2000);
           }
