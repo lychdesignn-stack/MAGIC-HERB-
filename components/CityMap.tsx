@@ -21,15 +21,15 @@ const CityMap: React.FC<CityMapProps> = ({ player, mapOffers, onSale, onBack }) 
     const level = player.level;
     const rarity = territory.requiredRarity;
     
-    // REGRA 3: Novos Requisitos ajustados
+    // REQUISITOS AJUSTADOS (Max 150 Rep)
     let requiredRep = 0;
     let requiredLv = 0;
 
     if (rarity === Rarity.COMUM_A) { requiredRep = 0; requiredLv = 0; }
-    else if (rarity === Rarity.COMUM_B) { requiredRep = 18; requiredLv = 3; }
-    else if (rarity === Rarity.RARA) { requiredRep = 75; requiredLv = 7; }
-    else if (rarity === Rarity.LENDARIA) { requiredRep = 180; requiredLv = 12; }
-    else if (rarity === Rarity.MISTICA) { requiredRep = 450; requiredLv = 23; }
+    else if (rarity === Rarity.COMUM_B) { requiredRep = 20; requiredLv = 2; }
+    else if (rarity === Rarity.RARA) { requiredRep = 40; requiredLv = 4; }
+    else if (rarity === Rarity.LENDARIA) { requiredRep = 70; requiredLv = 7; }
+    else if (rarity === Rarity.MISTICA) { requiredRep = 110; requiredLv = 12; }
 
     const isLocked = totalRep < requiredRep || level < requiredLv;
     

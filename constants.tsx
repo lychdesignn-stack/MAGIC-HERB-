@@ -91,6 +91,7 @@ export const NPCS: NPC[] = [
   { id: 'n7', name: 'PX', avatar: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Milo&backgroundColor=b6e3f4', dialogue: "Qualidade é o meu foco.", demand: ['lemon_skunk', 'northern_lights'], multiplier: 1.15, rarityRequired: null, rarity: Rarity.RARA },
   { id: 'n8', name: 'Chrono-Sage', avatar: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Sage&backgroundColor=b6e3f4', dialogue: "O tempo flui através do bloom.", demand: ['eternal_bloom', 'chrono_herb'], multiplier: 2.5, rarityRequired: null, rarity: Rarity.MISTICA },
   { id: 'n9', name: 'MIX', avatar: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Mix&backgroundColor=a855f7', dialogue: "O multiverso do cultivo em um só lugar.", demand: ['eternal_bloom', 'chrono_herb', 'sticky_icky', 'alien_og'], multiplier: 3.5, rarityRequired: Rarity.MISTICA, rarity: Rarity.MISTICA },
+  { id: 'n10', name: 'Drop da Sorte', avatar: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Jasper&backgroundColor=b6e3f4&glassesProbability=100', dialogue: "A sorte favorece quem planta qualidade.", demand: ['moon_rock', 'galactic_grape', 'neon_og'], multiplier: 1.8, rarityRequired: Rarity.LENDARIA, rarity: Rarity.LENDARIA },
 ];
 
 export const UPGRADE_LIMITS = { [Rarity.COMUM_A]: 3, [Rarity.COMUM_B]: 3, [Rarity.RARA]: 5, [Rarity.LENDARIA]: 8, [Rarity.MISTICA]: 12 };

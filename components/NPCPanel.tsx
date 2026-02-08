@@ -1,7 +1,7 @@
 
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo, useState } from 'react';
 import { NPCS, SEEDS, RARITY_DISPLAY } from '../constants';
-import { Player, Offer, Rarity } from '../types';
+import { Player, Offer, Rarity, NPC } from '../types';
 
 interface NPCPanelProps {
   player: Player;
@@ -16,11 +16,12 @@ interface NPCPanelProps {
 
 const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBuyFromNPC, onBack, aiDialogue, onGreet, offerResetIn }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [selectedNpcForRep, setSelectedNpcForRep] = useState<NPC | null>(null);
 
   const totalReputation = player.totalReputation;
   const currentLevel = player.level;
 
-  const isNpcUnlocked = (npc: typeof NPCS[0]) => {
+  const isNpcUnlocked = (npc: NPC) => {
     const rarity = npc.rarity || Rarity.COMUM_A;
     
     if (rarity === Rarity.COMUM_A) return true;
@@ -32,7 +33,7 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBu
     return true;
   };
 
-  const getUnlockRequirementLabel = (npc: typeof NPCS[0]) => {
+  const getUnlockRequirementLabel = (npc: NPC) => {
     const rarity = npc.rarity || Rarity.COMUM_A;
     if (rarity === Rarity.COMUM_B) return "REP 18 | LVL 3";
     if (rarity === Rarity.RARA) return "REP 75 | LVL 7";
@@ -48,12 +49,12 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBu
     }
   }, []);
 
-  const getReputationLabel = (rep: number) => {
-    if (rep >= 1000) return { label: 'Lenda', color: 'text-amber-400', icon: '👑', bg: 'bg-amber-400/10' };
-    if (rep >= 500) return { label: 'Elite', color: 'text-pink-500', icon: '💎', bg: 'bg-pink-500/10' };
-    if (rep >= 200) return { label: 'Sócio', color: 'text-purple-400', icon: '🏢', bg: 'bg-purple-400/10' };
-    if (rep >= 50) return { label: 'Truta', color: 'text-blue-400', icon: '🤙', bg: 'bg-blue-400/10' };
-    return { label: 'Estranho', color: 'text-zinc-500', icon: '👤', bg: 'bg-zinc-500/10' };
+  // AJUSTE: Categorias de Status solicitadas (Iniciante, Parceiro, Sócio, Mestre)
+  const getReputationDetails = (rep: number) => {
+    if (rep >= 600) return { label: 'Mestre', color: 'text-amber-400', icon: '👑', bg: 'bg-amber-400/10', next: 'Lenda', reqNext: 1000 };
+    if (rep >= 200) return { label: 'Sócio', color: 'text-purple-400', icon: '🏢', bg: 'bg-purple-400/10', next: 'Mestre', reqNext: 600 };
+    if (rep >= 100) return { label: 'Parceiro', color: 'text-blue-400', icon: '🤙', bg: 'bg-blue-400/10', next: 'Sócio', reqNext: 200 };
+    return { label: 'Iniciante', color: 'text-zinc-500', icon: '👤', bg: 'bg-zinc-500/10', next: 'Parceiro', reqNext: 100 };
   };
 
   const formatTime = (ms: number) => {
@@ -117,6 +118,51 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBu
 
   return (
     <div className="w-full flex flex-col gap-5 animate-in slide-in-from-right duration-300">
+      {/* Modal de Detalhes de Reputação */}
+      {selectedNpcForRep && (
+        <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-md flex items-center justify-center p-6 animate-in zoom-in duration-300">
+          <div className="bg-zinc-900 border border-white/10 w-full max-w-sm rounded-[2.5rem] p-6 shadow-2xl relative">
+            <button onClick={() => setSelectedNpcForRep(null)} className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors">✕</button>
+            <div className="flex flex-col items-center gap-4">
+              <img src={selectedNpcForRep.avatar} className="w-24 h-24 rounded-3xl border-2 border-indigo-500 bg-zinc-800 p-1 shadow-2xl" />
+              <h3 className="font-cartoon text-xl text-white">{selectedNpcForRep.name}</h3>
+              
+              {(() => {
+                const repValue = player.reputation[selectedNpcForRep.id] || 0;
+                const { label, color, icon, next, reqNext } = getReputationDetails(repValue);
+                const progress = Math.min(100, (repValue / reqNext) * 100);
+                
+                return (
+                  <div className="w-full flex flex-col gap-4 bg-black/40 p-5 rounded-3xl border border-white/5 mt-2">
+                    <div className="flex justify-between items-center">
+                       <span className="text-[10px] text-zinc-500 font-black uppercase">Status Atual</span>
+                       <span className={`text-xs font-cartoon ${color} flex items-center gap-1`}>{icon} {label}</span>
+                    </div>
+                    
+                    <div className="flex flex-col gap-1.5">
+                       <div className="flex justify-between text-[9px] font-black uppercase text-white/30">
+                          <span>Progresso</span>
+                          <span>{repValue} / {reqNext}</span>
+                       </div>
+                       <div className="h-2 w-full bg-white/5 rounded-full border border-white/5 overflow-hidden">
+                          <div className="h-full bg-indigo-500 transition-all duration-1000" style={{ width: `${progress}%` }} />
+                       </div>
+                    </div>
+
+                    <div className="flex justify-between items-center pt-2 border-t border-white/5">
+                       <span className="text-[9px] text-zinc-500 font-black uppercase">Próximo Status</span>
+                       <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">{next}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+              
+              <button onClick={() => setSelectedNpcForRep(null)} className="w-full py-3 rounded-2xl bg-indigo-600 text-white font-cartoon text-xs uppercase tracking-widest mt-4">Fechar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-end justify-between px-1">
         <div>
           <h2 className="font-cartoon text-2xl text-white tracking-tight">Vendas & Contatos</h2>
@@ -139,14 +185,17 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBu
           {NPCS.map(npc => {
             const unlocked = isNpcUnlocked(npc);
             const rep = player.reputation[npc.id] || 0;
-            const { label, color, icon, bg } = getReputationLabel(rep);
+            const { label, color, icon, bg } = getReputationDetails(rep);
             const rarityDisplay = RARITY_DISPLAY[npc.rarity || Rarity.COMUM_A];
             const isMysticNpc = npc.rarity === Rarity.MISTICA;
             
             return (
               <div key={npc.id} className="flex-shrink-0 flex flex-col items-center gap-2 w-20 transition-all duration-300">
-                <div className={`relative ${!unlocked ? 'grayscale-[0.8]' : ''}`}>
-                   <div className={`w-14 h-14 rounded-2xl border border-white/10 overflow-hidden relative z-10 flex items-center justify-center transition-all ${unlocked ? (isMysticNpc ? 'neon-border neon-purple' : 'bg-zinc-800 shadow-lg') : 'bg-zinc-950/90 border-dashed opacity-40 shadow-inner'}`}>
+                <div 
+                  className={`relative ${!unlocked ? 'grayscale-[0.8]' : 'cursor-pointer'}`}
+                  onClick={() => unlocked && setSelectedNpcForRep(npc)}
+                >
+                   <div className={`w-14 h-14 rounded-2xl border border-white/10 overflow-hidden relative z-10 flex items-center justify-center transition-all ${unlocked ? (isMysticNpc ? 'neon-border neon-purple' : 'bg-zinc-800 shadow-lg hover:border-indigo-500') : 'bg-zinc-950/90 border-dashed opacity-40 shadow-inner'}`}>
                      {unlocked ? (
                        <img src={npc.avatar} className="w-full h-full object-cover pointer-events-none" />
                      ) : (
@@ -263,7 +312,7 @@ const NPCPanel: React.FC<NPCPanelProps> = ({ player, offers, onAcceptOffer, onBu
                   <img src={npc.avatar} className="w-12 h-12 rounded-2xl border border-white/10 bg-zinc-800 p-0.5 shadow-md" />
                   <div>
                     <h4 className={`text-xs font-black tracking-tight ${isMysticDeal ? 'text-purple-400' : 'text-white/95'}`}>{npc.name}</h4>
-                    <span className="text-[9px] text-indigo-400 font-black uppercase">Contrato Especial MIX</span>
+                    <span className="text-[9px] text-indigo-400 font-black uppercase">Contrato Especial</span>
                   </div>
                 </div>
                 <div className="bg-black/40 rounded-[2rem] p-4 flex items-center justify-between border border-white/5 group relative overflow-hidden">

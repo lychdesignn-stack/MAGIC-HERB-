@@ -62,14 +62,13 @@ const App: React.FC = () => {
   const [lastMapReset, setLastMapReset] = useState<number>(Date.now());
   const [notification, setNotification] = useState<string | null>(null);
 
-  // Sistema de Códigos
   const handleActivateCode = (code: string) => {
     const cleanCode = code.toUpperCase().trim();
     if (cleanCode === 'EOLU') {
       setPlayer(p => ({
         ...p,
         unlockedRarities: [Rarity.COMUM_A, Rarity.COMUM_B, Rarity.RARA, Rarity.LENDARIA, Rarity.MISTICA],
-        totalReputation: Math.max(p.totalReputation, 500),
+        totalReputation: Math.max(p.totalReputation, 150),
         level: Math.max(p.level, 35)
       }));
       return "CONTEÚDO TOTAL DESBLOQUEADO!";
@@ -85,24 +84,25 @@ const App: React.FC = () => {
     return "CÓDIGO INVÁLIDO";
   };
 
+  // REQUISITOS DE DESBLOQUEIO (Cap 150 Rep)
   useEffect(() => {
     const { totalReputation, level } = player;
     const newUnlocked: Rarity[] = [Rarity.COMUM_A];
 
-    // REGRA 3: Aumento de requisitos das zonas (raridades)
-    if (totalReputation >= 18 && level >= 3) newUnlocked.push(Rarity.COMUM_B);
-    if (totalReputation >= 75 && level >= 7) newUnlocked.push(Rarity.RARA);
-    if (totalReputation >= 180 && level >= 12) newUnlocked.push(Rarity.LENDARIA);
-    if (totalReputation >= 450 && level >= 23) newUnlocked.push(Rarity.MISTICA);
+    if (totalReputation >= 20 && level >= 2) newUnlocked.push(Rarity.COMUM_B);
+    if (totalReputation >= 40 && level >= 4) newUnlocked.push(Rarity.RARA);
+    if (totalReputation >= 70 && level >= 7) newUnlocked.push(Rarity.LENDARIA);
+    if (totalReputation >= 110 && level >= 12) newUnlocked.push(Rarity.MISTICA);
 
     if (JSON.stringify(newUnlocked) !== JSON.stringify(player.unlockedRarities)) {
       setPlayer(prev => ({ ...prev, unlockedRarities: newUnlocked }));
     }
   }, [player.totalReputation, player.level]);
 
-  // Sistema de Recompensas por Nível
+  // PROGRESSÃO DE NÍVEL (Fórmula: base * (1.4 + nível * 0.15))
   useEffect(() => {
-    if (player.experience >= 100) {
+    const xpNeeded = 100 * (1.4 + player.level * 0.15);
+    if (player.experience >= xpNeeded) {
       const nextLevel = player.level + 1;
       let rewardSeedId = 'kush_comum';
       let qty = 1;
@@ -129,7 +129,7 @@ const App: React.FC = () => {
       setPlayer(prev => ({
         ...prev,
         level: nextLevel,
-        experience: prev.experience - 100,
+        experience: prev.experience - xpNeeded,
         inventory: {
           ...prev.inventory,
           [rewardSeedId]: (prev.inventory[rewardSeedId] || 0) + qty
@@ -139,7 +139,7 @@ const App: React.FC = () => {
       setNotification(`LEVEL UP! Nível ${nextLevel}. ${rewardMsg}`);
       setTimeout(() => setNotification(null), 4000);
     }
-  }, [player.experience]);
+  }, [player.experience, player.level]);
 
   const passiveBonuses = useMemo(() => {
     const fertCount = player.inventory['fertilizante_bio'] || 0;
@@ -173,17 +173,26 @@ const App: React.FC = () => {
     }
   };
 
+  // ZONAS DE ENTREGA BALANCEADAS POR RARIDADE
   const generateMapOffer = useCallback((territoryId: string, currentPlayer: Player): MapOffer | null => {
     const territory = TERRITORIES.find(t => t.id === territoryId)!;
+    
+    // Filtra estoque baseado na raridade permitida pelo território
+    const allowedSeeds = SEEDS.filter(s => s.rarity === territory.requiredRarity);
     const stock = Object.entries(currentPlayer.inventory)
-      .filter(([id, qty]) => (id.endsWith('_bud') || id.endsWith('_hash')) && (qty as number) > 0);
+      .filter(([id, qty]) => {
+        const baseId = id.replace('_bud', '').replace('_hash', '');
+        const isAllowed = allowedSeeds.some(s => s.id === baseId);
+        return (id.endsWith('_bud') || id.endsWith('_hash')) && (qty as number) > 0 && isAllowed;
+      });
     
     let itemId: string;
     if (stock.length > 0) {
       itemId = stock[Math.floor(Math.random() * stock.length)][0];
     } else {
-      const seed = SEEDS[0];
-      itemId = `${seed.id}_bud`;
+      // Se não tem no estoque, sugere o item base da raridade da zona
+      const baseSeed = allowedSeeds[Math.floor(Math.random() * allowedSeeds.length)] || SEEDS[0];
+      itemId = `${baseSeed.id}_bud`;
     }
 
     const seedId = itemId.replace('_bud', '').replace('_hash', '');
@@ -194,17 +203,14 @@ const App: React.FC = () => {
     const seedShopPrice = Math.floor(seed.baseValue * 0.35);
     const itemBaseValue = isHash ? seedShopPrice * 10 : seedShopPrice;
     
-    const typeMult = 1.2;
+    // Bônus do território
+    const typeMult = 1.25; 
     const zoneMult = getZoneMultiplier(seed.rarity);
     
     let finalPrice = Math.floor(itemBaseValue * qty * typeMult * zoneMult);
 
-    const isPremium = seed.rarity === Rarity.LENDARIA || seed.rarity === Rarity.MISTICA;
-    if (!isPremium) {
-      finalPrice = Math.min(1000, finalPrice);
-    }
-    
-    const minPrice = itemBaseValue * qty;
+    // Garante lucro mínimo
+    const minPrice = Math.floor(itemBaseValue * qty * 1.1);
     finalPrice = Math.max(minPrice, finalPrice);
 
     return {
@@ -266,7 +272,6 @@ const App: React.FC = () => {
     const seedId = targetItemId.replace('_bud', '').replace('_hash', '');
     const seed = SEEDS.find(s => s.id === seedId)!;
     
-    // REGRA 4: Só gera ofertas de compra se o NPC não for sócio (rep < 200)
     const possibleNpcs = NPCS.filter(npc => {
       const isUnlocked = npc.rarityRequired === null || currentPlayer.unlockedRarities.includes(npc.rarityRequired);
       const rep = currentPlayer.reputation[npc.id] || 0;
@@ -312,7 +317,7 @@ const App: React.FC = () => {
         quantity, 
         price: finalPrice, 
         currency, 
-        reputationAward: 1 // Será recalculado na aceitação
+        reputationAward: 1 
       };
     } else {
       const isPremium = seed.rarity === Rarity.LENDARIA || seed.rarity === Rarity.MISTICA;
@@ -328,7 +333,7 @@ const App: React.FC = () => {
         quantity, 
         price: finalPriceInCoins, 
         currency, 
-        reputationAward: 1 // Será recalculado na aceitação
+        reputationAward: 1 
       };
     }
   }, []);
@@ -409,10 +414,9 @@ const App: React.FC = () => {
     return () => clearInterval(tick);
   }, [lastOfferReset, lastMapReset, refreshOffers, refreshMapOffers, passiveBonuses.growthSpeedMultiplier]);
 
-  // REGRA 2: Rebalanceamento Reputação (-40% base e curva por nível/8)
   const calculateReputationGain = (base: number, level: number) => {
-    const reducedBase = base * 0.6; // Reduz em 40% (sobra 60%)
-    return Math.max(1, Math.floor(reducedBase * (1 / (1 + level / 8))));
+    const multiplier = 0.4; 
+    return Math.max(1, Math.floor(base * (1 / (1 + level / 8)) * multiplier));
   };
 
   const handleMapSale = (offerId: string, wasBusted: boolean) => {
@@ -447,14 +451,12 @@ const App: React.FC = () => {
     setMapOffers(prev => prev.filter(o => o.id !== offerId));
   };
 
-  // REGRA 1: Terrenos por Raridade
   const handlePlant = (plotId: number, seedId: string) => {
     const plot = plots.find(p => p.id === plotId);
     const seed = SEEDS.find(s => s.id === seedId);
     
     if (!plot || !seed) return;
 
-    // Ajuste de raridade simplificado para terrenos comuns
     const isCommonPlot = plot.type === Rarity.COMUM_A || plot.type === Rarity.COMUM_B;
     const isCommonSeed = seed.rarity === Rarity.COMUM_A || seed.rarity === Rarity.COMUM_B;
 
@@ -495,7 +497,6 @@ const App: React.FC = () => {
     }
   };
 
-  // Lógica de compra de NPCs sócios (venda do NPC para o player)
   const handleBuyFromNPC = (offer: Offer) => {
     const canAfford = offer.currency === 'coins' ? player.coins >= offer.price : player.hashCoins >= offer.price;
     if (canAfford) {
@@ -598,7 +599,6 @@ const App: React.FC = () => {
         {activeScreen === 'shop' && <Shop player={player} plots={plots} onBuy={handleBuy} onUpgradePlot={handleUpgradePlot} onBuyLuxury={handleBuyLuxury} onBuyConsumable={handleBuyConsumable} getConsumablePrice={getConsumablePrice} onBack={() => setActiveScreen('farm')} />}
         {activeScreen === 'npc' && <NPCPanel player={player} offers={offers} onAcceptOffer={handleAcceptOffer} onBuyFromNPC={handleBuyFromNPC} onBack={() => setActiveScreen('farm')} aiDialogue={aiDialogue} onGreet={(n) => {}} offerResetIn={OFFER_RESET_INTERVAL - (Date.now() - lastOfferReset)} />}
         {activeScreen === 'lab' && <Fabrication player={player} onFabricate={(id) => {
-          // REGRA 2: Extração garantindo produto correto e inventário atualizado
           const budId = `${id}_bud`;
           const hashId = `${id}_hash`;
           const qty = player.inventory[budId] || 0;
